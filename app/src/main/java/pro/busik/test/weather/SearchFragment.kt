@@ -63,6 +63,10 @@ class SearchFragment : Fragment() {
                     return@filter it.queryText().isNotEmpty() || it.isSubmitted
                 }
                 .distinctUntilChanged()
+                .observeOn(AndroidSchedulers.mainThread())
+                .doOnNext {
+                    pbForecastItems.visibility = View.VISIBLE
+                }
                 .switchMap {
                     val api = ServiceGenerator.createService(Api::class.java)
                     val query = it.queryText().toString()
@@ -74,7 +78,9 @@ class SearchFragment : Fragment() {
                             }
                             .onErrorResumeNext(Observable.just(ForecastResponse.getEmptyResponse()))
                 }
-                .observeOn(AndroidSchedulers.mainThread())
+                .doOnNext{
+                    pbForecastItems.visibility = View.GONE
+                }
                 .subscribeWith(object : DisposableObserver<ForecastResponse>() {
                     override fun onComplete() {
                         SafeLog.v("onComplete()")
