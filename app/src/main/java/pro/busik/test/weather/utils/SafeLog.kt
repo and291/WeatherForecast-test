@@ -11,4 +11,10 @@ object SafeLog {
             Log.v(tag, message)
         }
     }
+
+    fun v(message: String, throwable: Throwable){
+        if(BuildConfig.DEBUG) {
+            Log.v(tag, message, throwable)
+        }
+    }
 }
