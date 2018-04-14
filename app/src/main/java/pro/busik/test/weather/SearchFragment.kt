@@ -31,8 +31,19 @@ import java.util.concurrent.TimeUnit
  */
 class SearchFragment : Fragment() {
 
+    private val SEARCH_QUERY_KEY = "SEARCH_QUERY_KEY"
+    private var initialSearchQuery: String = "Москва" //default city :)
+    private lateinit var searchView: SearchView
+
     private val compositeDisposable = CompositeDisposable()
     private val adapter = Adapter(arrayListOf())
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        savedInstanceState?.let {
+            initialSearchQuery = it.getString(SEARCH_QUERY_KEY)
+        }
+    }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
@@ -53,15 +64,18 @@ class SearchFragment : Fragment() {
         inflater?.inflate(R.menu.fragment_search, menu)
         val searchMenuItem = menu!!.findItem(R.id.action_search)
 
-        val searchView = searchMenuItem.actionView as SearchView
+        searchView = searchMenuItem.actionView as SearchView
+        initialSearchQuery.let {
+            searchMenuItem.expandActionView()
+            searchView.setQuery(it, false)
+            searchView.clearFocus()
+        }
+
         //BUGFIX: SearchView doesn't fill entire toolbar on landscape without next line (API22)
         searchView.maxWidth = Integer.MAX_VALUE
         //end
         compositeDisposable += RxSearchView.queryTextChangeEvents(searchView)
                 .debounce(300, TimeUnit.MILLISECONDS)
-                .filter {
-                    return@filter it.queryText().isNotEmpty() || it.isSubmitted
-                }
                 .distinctUntilChanged()
                 .observeOn(AndroidSchedulers.mainThread())
                 .doOnNext {
@@ -97,6 +111,11 @@ class SearchFragment : Fragment() {
                     }
                 })
 
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putString(SEARCH_QUERY_KEY, searchView.query.toString())
     }
 
     override fun onDestroyOptionsMenu() {
