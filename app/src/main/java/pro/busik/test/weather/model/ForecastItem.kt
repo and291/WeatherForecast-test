@@ -1,4 +1,6 @@
 package pro.busik.test.weather.model
 
-data class ForecastItem(val dt_txt: String,
+import java.util.*
+
+data class ForecastItem(val dt: Date,
                         val main: ForecastItemMain)
