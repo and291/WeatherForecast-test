@@ -54,6 +54,9 @@ class SearchFragment : Fragment() {
         val searchMenuItem = menu!!.findItem(R.id.action_search)
 
         val searchView = searchMenuItem.actionView as SearchView
+        //BUGFIX: SearchView doesn't fill entire toolbar on landscape without next line (API22)
+        searchView.maxWidth = Integer.MAX_VALUE
+        //end
         compositeDisposable += RxSearchView.queryTextChangeEvents(searchView)
                 .debounce(300, TimeUnit.MILLISECONDS)
                 .filter {
