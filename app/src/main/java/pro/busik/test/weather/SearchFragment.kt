@@ -10,9 +10,11 @@ import android.view.*
 import android.support.v7.widget.SearchView
 import android.widget.LinearLayout
 import com.jakewharton.rxbinding2.support.v7.widget.RxSearchView
+import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.observers.DisposableObserver
+import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.fragment_search.*
 import pro.busik.test.weather.refrofit.Api
 import pro.busik.test.weather.model.ForecastItem
@@ -52,11 +54,22 @@ class SearchFragment : Fragment() {
         val searchMenuItem = menu!!.findItem(R.id.action_search)
 
         val searchView = searchMenuItem.actionView as SearchView
-        compositeDisposable += RxSearchView.queryTextChanges(searchView)
-                .debounce(500, TimeUnit.MILLISECONDS)
-                .flatMap {
+        compositeDisposable += RxSearchView.queryTextChangeEvents(searchView)
+                .debounce(300, TimeUnit.MILLISECONDS)
+                .filter {
+                    return@filter it.queryText().isNotEmpty() || it.isSubmitted
+                }
+                .distinctUntilChanged()
+                .switchMap {
                     val api = ServiceGenerator.createService(Api::class.java)
-                    return@flatMap api.forecast(it.toString())
+                    val query = it.queryText().toString()
+                    return@switchMap api.forecast(query)
+                            .subscribeOn(Schedulers.io())
+                            .observeOn(AndroidSchedulers.mainThread())
+                            .doOnError {
+                                SafeLog.v("Error occurred", it)
+                            }
+                            .onErrorResumeNext(Observable.just(ForecastResponse.getEmptyResponse()))
                 }
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribeWith(object : DisposableObserver<ForecastResponse>() {
