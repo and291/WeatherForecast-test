@@ -3,8 +3,9 @@ package pro.busik.test.weather.model.repository
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
+import pro.busik.test.weather.model.Forecast
 import pro.busik.test.weather.model.ForecastResponse
-import pro.busik.test.weather.model.ForecastResponseCached
+import pro.busik.test.weather.model.ForecastCached
 import pro.busik.test.weather.refrofit.Api
 import pro.busik.test.weather.refrofit.ServiceGenerator
 import pro.busik.test.weather.utils.SafeLog
@@ -13,30 +14,40 @@ class ForecastRepository{
     private val remoteDataSource = ForecastRemoteDataSource()
 
     fun getForecast(query: String) : Observable<ForecastResponse> {
-        //always empty response for empty search query
+        //always set exception for empty search query
         if(query.isEmpty()){
-            return Observable.just(ForecastResponse.getEmptyResponse())
+            val error = Exception("Empty search query")
+            return Observable.just(ForecastResponse(error))
         }
 
-        return ForecastLocalDataSource.tryGetFromCache(query)
-                ?: remoteDataSource.requestFromServer(query)
-                        .switchMap {
-                            ForecastLocalDataSource.saveForecast(query, it)
-                            return@switchMap Observable.just(it)
-                        }
+        return ForecastLocalDataSource.tryGetFromCache(query) ?:
+        remoteDataSource.requestFromServer(query)
+                .observeOn(AndroidSchedulers.mainThread())
+                .doOnNext{
+                    it.forecast?.let {
+                        ForecastLocalDataSource.save(query, it)
+                    }
+                }
     }
 }
 
 object ForecastLocalDataSource {
-    private const val timeout = 300_000.0
-    private var lastResponse: ForecastResponseCached? = null
+    private const val lifetime = 300_000.0
+    private var lastReceivedForecast: ForecastCached? = null
 
     fun tryGetFromCache(query: String) : Observable<ForecastResponse>? {
-        return if(lastResponse?.isFits(query, timeout) == true) lastResponse?.getAsObservable() else null
+        lastReceivedForecast?.let {
+            if(it.isFits(query, lifetime)){
+                SafeLog.v("Forecast is taken from cache: $it")
+                return it.getFromCache()
+            }
+        }
+        return null
     }
 
-    fun saveForecast(query: String, forecastResponse: ForecastResponse) {
-        lastResponse = ForecastResponseCached(query, forecastResponse)
+    fun save(query: String, forecast: Forecast) {
+        SafeLog.v("Forecast saved to cache: $forecast")
+        lastReceivedForecast = ForecastCached(query, forecast)
     }
 }
 
@@ -46,10 +57,14 @@ class ForecastRemoteDataSource {
         val api = ServiceGenerator.createService(Api::class.java)
         return api.forecast(query)
                 .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .doOnError {
-                    SafeLog.v("Error occurred", it)
+                .doOnSubscribe { SafeLog.v("Forecast request: onSubscribe") }
+                .flatMap {
+                    SafeLog.v("Forecast request: api response converted to ForecastResponse")
+                    return@flatMap Observable.just(ForecastResponse(it))
                 }
-                .onErrorResumeNext(Observable.just(ForecastResponse.getEmptyResponse()))
+                .onErrorReturn {
+                    //SafeLog.v("Forecast request: Error on api request", it)
+                    return@onErrorReturn ForecastResponse(it)
+                }
     }
 }

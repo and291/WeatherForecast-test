@@ -22,34 +22,35 @@ import pro.busik.test.weather.utils.plusAssign
 import pro.busik.test.weather.views.ForecastItemView
 import java.util.concurrent.TimeUnit
 
-
-/**
- * A placeholder fragment containing a simple view.
- */
 class SearchFragment : Fragment() {
 
-    private val SEARCH_QUERY_KEY = "SEARCH_QUERY_KEY"
-    private var initialSearchQuery: String = "Москва" //default city :)
-    private lateinit var searchView: SearchView
-
-    private val compositeDisposable = CompositeDisposable()
+    private val searchQueryKey = "SearchQueryKey"
     private val adapter = Adapter(arrayListOf())
+    private val compositeDisposable = CompositeDisposable()
+
+    private var initialSearchQuery: String = "Москва"
+    private var searchView: SearchView? = null
+
+    init {
+        setHasOptionsMenu(true)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        //Restore search query
         savedInstanceState?.let {
-            initialSearchQuery = it.getString(SEARCH_QUERY_KEY)
+            initialSearchQuery = it.getString(searchQueryKey)
+            SafeLog.v("Search query restored: $initialSearchQuery")
         }
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
-                              savedInstanceState: Bundle?): View? {
-        setHasOptionsMenu(true)
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         return inflater.inflate(R.layout.fragment_search, container, false)
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
+    override fun onActivityCreated(savedInstanceState: Bundle?) {
+        super.onActivityCreated(savedInstanceState)
         rvForecastItems.adapter = adapter
         rvForecastItems.layoutManager = LinearLayoutManager(context)
         rvForecastItems.addItemDecoration(DividerItemDecoration(context, LinearLayout.VERTICAL))
@@ -59,57 +60,84 @@ class SearchFragment : Fragment() {
         super.onCreateOptionsMenu(menu, inflater)
 
         inflater?.inflate(R.menu.fragment_search, menu)
-        val searchMenuItem = menu!!.findItem(R.id.action_search)
 
-        searchView = searchMenuItem.actionView as SearchView
-        initialSearchQuery.let {
+        if(searchView == null) {
+            val searchMenuItem = menu!!.findItem(R.id.action_search)
+            val searchView = searchMenuItem.actionView as SearchView
             searchMenuItem.expandActionView()
-            searchView.setQuery(it, false)
+            searchView.setQuery(initialSearchQuery, false)
             searchView.clearFocus()
-        }
 
-        //BUGFIX: SearchView doesn't fill entire toolbar on landscape without next line (API22)
-        searchView.maxWidth = Integer.MAX_VALUE
-        //end
+            //BUGFIX: SearchView doesn't fill entire toolbar on landscape without next line (API22)
+            searchView.maxWidth = Integer.MAX_VALUE
+            //end
+
+            setObservable(searchView)
+            this.searchView = searchView
+        }
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+
+        //Save current search query
+        val currentSearchQuery = searchView?.query.toString()
+        outState.putString(searchQueryKey, currentSearchQuery)
+        SafeLog.v("Current search query saved: $currentSearchQuery")
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        compositeDisposable.dispose()
+    }
+
+    private fun setObservable(searchView: SearchView){
         compositeDisposable += RxSearchView.queryTextChangeEvents(searchView)
                 .debounce(300, TimeUnit.MILLISECONDS)
                 .distinctUntilChanged()
                 .observeOn(AndroidSchedulers.mainThread())
                 .doOnNext {
+                    SafeLog.v("pbForecastItems shown")
                     pbForecastItems.visibility = View.VISIBLE
                 }
                 .switchMap {
                     return@switchMap ForecastRepository().getForecast(it.queryText().toString())
                 }
+                .observeOn(AndroidSchedulers.mainThread())
                 .doOnNext{
+                    SafeLog.v("pbForecastItems hidden")
                     pbForecastItems.visibility = View.GONE
                 }
                 .subscribeWith(object : DisposableObserver<ForecastResponse>() {
                     override fun onComplete() {
                         SafeLog.v("onComplete()")
+                        //TODO notify user
                     }
 
                     override fun onNext(value: ForecastResponse?) {
-                        SafeLog.v("onNext(): ${value}")
-                        val diff = DiffUtil.calculateDiff(adapter.getDiffCallback(value!!.list))
-                        adapter.update(diff, value!!.list)
+                        //SafeLog.v("onNext(): $value")
+                        value?.let {
+                            it.throwable?.let {
+                                SafeLog.v("", it)
+                            }
+
+                            var list: ArrayList<ForecastItem> = arrayListOf()
+                            it.forecast?.let {
+                                list = it.list
+                            }
+
+                            val diff = DiffUtil.calculateDiff(adapter.getDiffCallback(list))
+                            adapter.update(diff, list)
+
+                            SafeLog.v("Displayed ${list.size} items")
+                        }
                     }
 
                     override fun onError(e: Throwable?) {
-                        SafeLog.v("onError() ${e}")
+                        SafeLog.v("onError() $e")
+                        //TODO notify user
                     }
                 })
-
-    }
-
-    override fun onSaveInstanceState(outState: Bundle) {
-        super.onSaveInstanceState(outState)
-        outState.putString(SEARCH_QUERY_KEY, searchView.query.toString())
-    }
-
-    override fun onDestroyOptionsMenu() {
-        super.onDestroyOptionsMenu()
-        compositeDisposable.dispose()
     }
 
     private inner class Adapter(private val items: MutableList<ForecastItem>) : RecyclerView.Adapter<ViewHolder>() {
@@ -154,12 +182,12 @@ class SearchFragment : Fragment() {
         override fun getNewListSize(): Int = new.size
 
         override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
-            return old[oldItemPosition].hashCode() == new[newItemPosition].hashCode() //TODO check
+            //it's better to check by item.id, but forecast item has no ids
+            return old[oldItemPosition] == new[newItemPosition]
         }
 
         override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
-            return old[oldItemPosition].equals(new[newItemPosition])
+            return old[oldItemPosition] == new[newItemPosition]
         }
-
     }
 }
