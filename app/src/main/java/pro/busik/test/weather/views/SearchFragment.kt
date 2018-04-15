@@ -15,6 +15,7 @@ import android.widget.LinearLayout
 import kotlinx.android.synthetic.main.fragment_search.*
 import pro.busik.test.weather.R
 import pro.busik.test.weather.databinding.FragmentSearchBinding
+import pro.busik.test.weather.databinding.ListItemForecastBinding
 import pro.busik.test.weather.model.ForecastItem
 import pro.busik.test.weather.utils.SafeLog
 import pro.busik.test.weather.viewmodel.SearchViewModel
@@ -99,9 +100,9 @@ class SearchFragment : Fragment() {
     private inner class Adapter(private val items: MutableList<ForecastItem>) : RecyclerView.Adapter<ViewHolder>() {
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-            val view = LayoutInflater.from(this@SearchFragment.context)
-                    .inflate(R.layout.list_item_forecast, parent, false)
-            return ViewHolder(view)
+            val layoutInflater = LayoutInflater.from(this@SearchFragment.context)
+            val binding = ListItemForecastBinding.inflate(layoutInflater, parent, false)
+            return ViewHolder(binding)
         }
 
         override fun getItemCount(): Int = items.size
@@ -121,12 +122,12 @@ class SearchFragment : Fragment() {
         }
     }
 
-    private class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-
-        private val forecastItemView: ForecastItemView = ForecastItemView(itemView)
+    private class ViewHolder(private val binding: ListItemForecastBinding)
+        : RecyclerView.ViewHolder(binding.root) {
 
         internal fun bind(forecastItem: ForecastItem){
-            forecastItemView.bind(forecastItem)
+            binding.forecastItem = forecastItem
+            binding.executePendingBindings()
         }
     }
 
