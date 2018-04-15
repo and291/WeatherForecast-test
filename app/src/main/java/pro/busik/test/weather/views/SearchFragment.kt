@@ -76,6 +76,7 @@ class SearchFragment : Fragment() {
             val searchMenuItem = menu!!.findItem(R.id.action_search)
             val searchView = searchMenuItem.actionView as SearchView
             searchMenuItem.expandActionView()
+            searchView.queryHint = getString(R.string.search_hint)
             searchView.setQuery(initialSearchQuery, false)
             searchView.clearFocus()
 
