@@ -1,5 +1,8 @@
 package pro.busik.test.weather
 
+import android.arch.lifecycle.Observer
+import android.arch.lifecycle.ViewModelProviders
+import android.databinding.DataBindingUtil
 import android.support.v4.app.Fragment
 import android.os.Bundle
 import android.support.v7.util.DiffUtil
@@ -9,27 +12,23 @@ import android.support.v7.widget.RecyclerView
 import android.view.*
 import android.support.v7.widget.SearchView
 import android.widget.LinearLayout
-import com.jakewharton.rxbinding2.support.v7.widget.RxSearchView
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.disposables.CompositeDisposable
-import io.reactivex.observers.DisposableObserver
 import kotlinx.android.synthetic.main.fragment_search.*
+import pro.busik.test.weather.databinding.FragmentSearchBinding
 import pro.busik.test.weather.model.ForecastItem
-import pro.busik.test.weather.model.repository.ForecastRepository
-import pro.busik.test.weather.model.ForecastResponse
 import pro.busik.test.weather.utils.SafeLog
-import pro.busik.test.weather.utils.plusAssign
+import pro.busik.test.weather.viewmodel.SearchViewModel
 import pro.busik.test.weather.views.ForecastItemView
-import java.util.concurrent.TimeUnit
 
 class SearchFragment : Fragment() {
 
     private val searchQueryKey = "SearchQueryKey"
     private val adapter = Adapter(arrayListOf())
-    private val compositeDisposable = CompositeDisposable()
 
     private var initialSearchQuery: String = "Москва"
     private var searchView: SearchView? = null
+
+    private lateinit var dataBinding: FragmentSearchBinding
+    private lateinit var viewModel: SearchViewModel
 
     init {
         setHasOptionsMenu(true)
@@ -37,6 +36,7 @@ class SearchFragment : Fragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        viewModel = ViewModelProviders.of(this).get(SearchViewModel::class.java)
 
         //Restore search query
         savedInstanceState?.let {
@@ -46,14 +46,24 @@ class SearchFragment : Fragment() {
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        return inflater.inflate(R.layout.fragment_search, container, false)
+        dataBinding = DataBindingUtil.inflate(inflater, R.layout.fragment_search, container, false)
+        dataBinding.searchViewModel = viewModel
+        dataBinding.executePendingBindings()
+        return dataBinding.root
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        rvForecastItems.adapter = adapter
         rvForecastItems.layoutManager = LinearLayoutManager(context)
+        rvForecastItems.adapter = adapter
         rvForecastItems.addItemDecoration(DividerItemDecoration(context, LinearLayout.VERTICAL))
+
+        viewModel.items.observe(this, Observer<List<ForecastItem>> {
+            it?.let {
+                val diff = DiffUtil.calculateDiff(adapter.getDiffCallback(it))
+                adapter.update(diff, it)
+            }
+        })
     }
 
     override fun onCreateOptionsMenu(menu: Menu?, inflater: MenuInflater?) {
@@ -72,7 +82,7 @@ class SearchFragment : Fragment() {
             searchView.maxWidth = Integer.MAX_VALUE
             //end
 
-            setObservable(searchView)
+            viewModel.setSearchView(searchView)
             this.searchView = searchView
         }
     }
@@ -84,60 +94,6 @@ class SearchFragment : Fragment() {
         val currentSearchQuery = searchView?.query.toString()
         outState.putString(searchQueryKey, currentSearchQuery)
         SafeLog.v("Current search query saved: $currentSearchQuery")
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        compositeDisposable.dispose()
-    }
-
-    private fun setObservable(searchView: SearchView){
-        compositeDisposable += RxSearchView.queryTextChangeEvents(searchView)
-                .debounce(300, TimeUnit.MILLISECONDS)
-                .distinctUntilChanged()
-                .observeOn(AndroidSchedulers.mainThread())
-                .doOnNext {
-                    SafeLog.v("pbForecastItems shown")
-                    pbForecastItems.visibility = View.VISIBLE
-                }
-                .switchMap {
-                    return@switchMap ForecastRepository().getForecast(it.queryText().toString())
-                }
-                .observeOn(AndroidSchedulers.mainThread())
-                .doOnNext{
-                    SafeLog.v("pbForecastItems hidden")
-                    pbForecastItems.visibility = View.GONE
-                }
-                .subscribeWith(object : DisposableObserver<ForecastResponse>() {
-                    override fun onComplete() {
-                        SafeLog.v("onComplete()")
-                        //TODO notify user
-                    }
-
-                    override fun onNext(value: ForecastResponse?) {
-                        //SafeLog.v("onNext(): $value")
-                        value?.let {
-                            it.throwable?.let {
-                                SafeLog.v("", it)
-                            }
-
-                            var list: ArrayList<ForecastItem> = arrayListOf()
-                            it.forecast?.let {
-                                list = it.list
-                            }
-
-                            val diff = DiffUtil.calculateDiff(adapter.getDiffCallback(list))
-                            adapter.update(diff, list)
-
-                            SafeLog.v("Displayed ${list.size} items")
-                        }
-                    }
-
-                    override fun onError(e: Throwable?) {
-                        SafeLog.v("onError() $e")
-                        //TODO notify user
-                    }
-                })
     }
 
     private inner class Adapter(private val items: MutableList<ForecastItem>) : RecyclerView.Adapter<ViewHolder>() {
