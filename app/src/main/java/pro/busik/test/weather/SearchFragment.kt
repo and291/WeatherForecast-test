@@ -10,16 +10,13 @@ import android.view.*
 import android.support.v7.widget.SearchView
 import android.widget.LinearLayout
 import com.jakewharton.rxbinding2.support.v7.widget.RxSearchView
-import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.observers.DisposableObserver
-import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.fragment_search.*
-import pro.busik.test.weather.refrofit.Api
 import pro.busik.test.weather.model.ForecastItem
+import pro.busik.test.weather.model.repository.ForecastRepository
 import pro.busik.test.weather.model.ForecastResponse
-import pro.busik.test.weather.refrofit.ServiceGenerator
 import pro.busik.test.weather.utils.SafeLog
 import pro.busik.test.weather.utils.plusAssign
 import pro.busik.test.weather.views.ForecastItemView
@@ -82,15 +79,7 @@ class SearchFragment : Fragment() {
                     pbForecastItems.visibility = View.VISIBLE
                 }
                 .switchMap {
-                    val api = ServiceGenerator.createService(Api::class.java)
-                    val query = it.queryText().toString()
-                    return@switchMap api.forecast(query)
-                            .subscribeOn(Schedulers.io())
-                            .observeOn(AndroidSchedulers.mainThread())
-                            .doOnError {
-                                SafeLog.v("Error occurred", it)
-                            }
-                            .onErrorResumeNext(Observable.just(ForecastResponse.getEmptyResponse()))
+                    return@switchMap ForecastRepository().getForecast(it.queryText().toString())
                 }
                 .doOnNext{
                     pbForecastItems.visibility = View.GONE
