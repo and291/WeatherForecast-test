@@ -4,17 +4,17 @@ import android.util.Log
 import pro.busik.test.weather.BuildConfig
 
 object SafeLog {
-    private const val tag = "weather"
+    private const val tag = "weatherTag"
 
     fun v(message: String){
         if(BuildConfig.DEBUG) {
-            Log.v(tag, message)
+            Log.v(tag, "[${Thread.currentThread().name}] $message")
         }
     }
 
     fun v(message: String, throwable: Throwable){
         if(BuildConfig.DEBUG) {
-            Log.v(tag, message, throwable)
+            Log.v(tag, "[${Thread.currentThread().name}] $message $throwable")
         }
     }
 }
