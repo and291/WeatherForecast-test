@@ -13,7 +13,7 @@ interface Api {
     fun find(@Query("q") query: String) : Observable<FindResponse>
 
     @Headers("Content-Type: text/json; charset=utf-8")
-    @GET("/data/2.5/forecast?lang=ru&mode=json&appid=0a49791459a25a1ec88fb1893630d971")
+    @GET("/data/2.5/forecast?units=metric&lang=ru&mode=json&appid=0a49791459a25a1ec88fb1893630d971")
     fun forecast(@Query("q") query: String) : Observable<ForecastResponse>
 }
 
