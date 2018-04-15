@@ -1,4 +1,4 @@
-package pro.busik.test.weather
+package pro.busik.test.weather.views
 
 import android.arch.lifecycle.Observer
 import android.arch.lifecycle.ViewModelProviders
@@ -13,11 +13,11 @@ import android.view.*
 import android.support.v7.widget.SearchView
 import android.widget.LinearLayout
 import kotlinx.android.synthetic.main.fragment_search.*
+import pro.busik.test.weather.R
 import pro.busik.test.weather.databinding.FragmentSearchBinding
 import pro.busik.test.weather.model.ForecastItem
 import pro.busik.test.weather.utils.SafeLog
 import pro.busik.test.weather.viewmodel.SearchViewModel
-import pro.busik.test.weather.views.ForecastItemView
 
 class SearchFragment : Fragment() {
 
@@ -116,7 +116,7 @@ class SearchFragment : Fragment() {
             diffResult.dispatchUpdatesTo(this)
         }
 
-        internal fun getDiffCallback(updatedList: List<ForecastItem>) : ForecastItemDiffCallback{
+        internal fun getDiffCallback(updatedList: List<ForecastItem>) : ForecastItemDiffCallback {
             return ForecastItemDiffCallback(adapter.items, updatedList)
         }
     }
