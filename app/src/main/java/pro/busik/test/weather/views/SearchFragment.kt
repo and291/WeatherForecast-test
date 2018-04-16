@@ -19,6 +19,8 @@ import pro.busik.test.weather.databinding.ListItemForecastBinding
 import pro.busik.test.weather.model.ForecastItem
 import pro.busik.test.weather.utils.SafeLog
 import pro.busik.test.weather.viewmodel.SearchViewModel
+import android.app.SearchManager
+import android.content.Context
 
 class SearchFragment : Fragment() {
 
@@ -75,14 +77,18 @@ class SearchFragment : Fragment() {
         if(searchView == null) {
             val searchMenuItem = menu!!.findItem(R.id.action_search)
             val searchView = searchMenuItem.actionView as SearchView
+
+            //force search view to fill entire toolbar
+            searchView.maxWidth = Integer.MAX_VALUE
+
+            //set configuration
+            val searchManager = context?.getSystemService(Context.SEARCH_SERVICE) as SearchManager
+            searchView.setSearchableInfo(searchManager.getSearchableInfo(activity?.componentName))
+
+            //set search query
             searchMenuItem.expandActionView()
-            searchView.queryHint = getString(R.string.search_hint)
             searchView.setQuery(initialSearchQuery, false)
             searchView.clearFocus()
-
-            //BUGFIX: SearchView doesn't fill entire toolbar on landscape without next line (API22)
-            searchView.maxWidth = Integer.MAX_VALUE
-            //end
 
             viewModel.setSearchView(searchView)
             this.searchView = searchView
