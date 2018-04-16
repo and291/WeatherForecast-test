@@ -9,9 +9,11 @@ class DefinedException(cause: Throwable) : Exception(cause){
         //define proper string resource
         val stringId = when (cause) {
             is HttpException -> {
-                if(cause.code() == 404)
+                if(cause.code() == 404) {
                     R.string.exception_city_not_found
-                R.string.exception_server_connection_error
+                } else {
+                    R.string.exception_server_connection_error
+                }
             }
             is EmptySearchQueryException -> R.string.exception_empty_search_query
             is NoInternetConnectionException -> R.string.exception_no_internet
