@@ -5,7 +5,13 @@ import dagger.Component
 import dagger.Module
 import dagger.Provides
 import dagger.android.AndroidInjector
+import dagger.android.ContributesAndroidInjector
 import dagger.android.support.AndroidSupportInjectionModule
+import pro.busik.test.weather.model.repository.ForecastRepository
+import pro.busik.test.weather.model.repository.NetManager
+import pro.busik.test.weather.viewmodel.SearchViewModelFactory
+import pro.busik.test.weather.views.MainActivity
+import pro.busik.test.weather.views.SearchFragment
 import javax.inject.Singleton
 
 @Module
@@ -18,9 +24,38 @@ class AppModule{
 }
 
 @Singleton
-@Component(modules = [AndroidSupportInjectionModule::class, AppModule::class])
+@Component(modules = [
+    AndroidSupportInjectionModule::class,
+    AppModule::class,
+    MainActivityModule::class,
+    SearchFragmentModule::class
+])
 interface AppComponent : AndroidInjector<SearchApplication> {
 
     @Component.Builder
     abstract class Builder : AndroidInjector.Builder<SearchApplication>()
+}
+
+@Module
+internal abstract class SearchFragmentModule{
+
+    @Module
+    companion object {
+        @JvmStatic
+        @Provides
+        internal fun providesSearchViewModelFactory(application: SearchApplication)
+                : SearchViewModelFactory {
+            return SearchViewModelFactory(application, ForecastRepository(NetManager(application)))
+        }
+    }
+
+    @ContributesAndroidInjector()
+    internal abstract fun searchFragment(): SearchFragment
+}
+
+@Module
+internal abstract class MainActivityModule{
+
+    @ContributesAndroidInjector()
+    internal abstract fun mainActivity(): MainActivity
 }
