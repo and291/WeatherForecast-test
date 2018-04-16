@@ -8,10 +8,10 @@ import pro.busik.test.weather.refrofit.ServiceGenerator
 import pro.busik.test.weather.utils.SafeLog
 import javax.inject.Inject
 
-class ForecastRemoteDataSource @Inject constructor(){
+class ForecastRemoteDataSource @Inject constructor(private val serviceGenerator: ServiceGenerator){
 
     fun requestFromServer(query: String) : Observable<ForecastResponse> {
-        val api = ServiceGenerator.createService(Api::class.java)
+        val api = serviceGenerator.createService(Api::class.java)
         return api.forecast(query)
                 .subscribeOn(Schedulers.io())
                 .flatMap {
