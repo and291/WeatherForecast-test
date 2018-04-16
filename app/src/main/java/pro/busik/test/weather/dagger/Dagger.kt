@@ -1,4 +1,4 @@
-package pro.busik.test.weather
+package pro.busik.test.weather.dagger
 
 import android.content.Context
 import dagger.Component
@@ -8,7 +8,6 @@ import dagger.android.AndroidInjector
 import dagger.android.ContributesAndroidInjector
 import dagger.android.support.AndroidSupportInjectionModule
 import pro.busik.test.weather.model.repository.ForecastRepository
-import pro.busik.test.weather.model.repository.NetManager
 import pro.busik.test.weather.viewmodel.SearchViewModelFactory
 import pro.busik.test.weather.views.MainActivity
 import pro.busik.test.weather.views.SearchFragment

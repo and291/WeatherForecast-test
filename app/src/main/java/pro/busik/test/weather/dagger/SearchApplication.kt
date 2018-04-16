@@ -1,4 +1,4 @@
-package pro.busik.test.weather
+package pro.busik.test.weather.dagger
 
 import dagger.android.AndroidInjector
 import dagger.android.DaggerApplication
