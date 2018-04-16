@@ -3,7 +3,6 @@ package pro.busik.test.weather.views
 import android.arch.lifecycle.Observer
 import android.arch.lifecycle.ViewModelProviders
 import android.databinding.DataBindingUtil
-import android.support.v4.app.Fragment
 import android.os.Bundle
 import android.support.v7.util.DiffUtil
 import android.support.v7.widget.DividerItemDecoration
@@ -21,8 +20,11 @@ import pro.busik.test.weather.utils.SafeLog
 import pro.busik.test.weather.viewmodel.SearchViewModel
 import android.app.SearchManager
 import android.content.Context
+import dagger.android.support.DaggerFragment
+import pro.busik.test.weather.viewmodel.SearchViewModelFactory
+import javax.inject.Inject
 
-class SearchFragment : Fragment() {
+class SearchFragment : DaggerFragment() {
 
     private val searchQueryKey = "SearchQueryKey"
     private val adapter = Adapter(arrayListOf())
@@ -33,13 +35,16 @@ class SearchFragment : Fragment() {
     private lateinit var dataBinding: FragmentSearchBinding
     private lateinit var viewModel: SearchViewModel
 
+    @Inject lateinit var searchViewModelFactory: SearchViewModelFactory
+
     init {
         setHasOptionsMenu(true)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        viewModel = ViewModelProviders.of(this).get(SearchViewModel::class.java)
+        viewModel = ViewModelProviders.of(this, searchViewModelFactory)
+                .get(SearchViewModel::class.java)
 
         //Restore search query
         savedInstanceState?.let {
