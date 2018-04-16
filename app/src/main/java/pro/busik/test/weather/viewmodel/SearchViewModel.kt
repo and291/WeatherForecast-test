@@ -43,7 +43,14 @@ class SearchViewModel(application: Application,
     fun setSearchView(searchView: SearchView){
         compositeDisposable += RxSearchView.queryTextChangeEvents(searchView)
                 .debounce(300, TimeUnit.MILLISECONDS)
-                .distinctUntilChanged()
+                .distinctUntilChanged { old, new ->
+                    //distinctUntilChanged if not submitted
+                    return@distinctUntilChanged if(new.isSubmitted){
+                         false
+                    } else {
+                        old.queryText().toString() == new.queryText().toString()
+                    }
+                }
                 .observeOn(AndroidSchedulers.mainThread())
                 .doOnNext { isLoading.set(true) }
                 .switchMap {
