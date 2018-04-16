@@ -21,19 +21,19 @@ class ForecastRepository(private val netManager: NetManager) {
             return Observable.just(ForecastResponse(EmptySearchQueryException()))
         }
 
-        //set exception if there is no internet connection
-        if(!netManager.isConnectedToInternet){
-            return Observable.just(ForecastResponse(NoInternetConnectionException()))
-        }
-
         return ForecastLocalDataSource.tryGetFromCache(query) ?:
-        remoteDataSource.requestFromServer(query)
-                .observeOn(AndroidSchedulers.mainThread())
-                .doOnNext{
-                    it.forecast?.let {
-                        ForecastLocalDataSource.save(query, it)
-                    }
-                }
+            if(!netManager.isConnectedToInternet){
+                //set exception for network request if there is no internet connection
+                Observable.just(ForecastResponse(NoInternetConnectionException()))
+            } else {
+                remoteDataSource.requestFromServer(query)
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .doOnNext{
+                            it.forecast?.let {
+                                ForecastLocalDataSource.save(query, it)
+                            }
+                        }
+            }
     }
 }
 
