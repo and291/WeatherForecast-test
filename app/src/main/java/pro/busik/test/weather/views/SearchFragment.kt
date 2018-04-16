@@ -32,7 +32,6 @@ class SearchFragment : DaggerFragment() {
     private var initialSearchQuery: String = "Москва"
     private var searchView: SearchView? = null
 
-    private lateinit var dataBinding: FragmentSearchBinding
     private lateinit var viewModel: SearchViewModel
 
     @Inject lateinit var searchViewModelFactory: SearchViewModelFactory
@@ -54,7 +53,8 @@ class SearchFragment : DaggerFragment() {
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        dataBinding = DataBindingUtil.inflate(inflater, R.layout.fragment_search, container, false)
+        val dataBinding: FragmentSearchBinding = DataBindingUtil
+                .inflate(inflater, R.layout.fragment_search, container, false)
         dataBinding.searchViewModel = viewModel
         dataBinding.executePendingBindings()
         return dataBinding.root
