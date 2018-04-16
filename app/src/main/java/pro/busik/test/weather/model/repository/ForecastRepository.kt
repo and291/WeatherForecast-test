@@ -12,9 +12,11 @@ import pro.busik.test.weather.refrofit.Api
 import pro.busik.test.weather.refrofit.ServiceGenerator
 import pro.busik.test.weather.utils.SafeLog
 import javax.inject.Inject
+import javax.inject.Singleton
 
 class ForecastRepository @Inject constructor(private val netManager: NetManager) {
-    private val remoteDataSource = ForecastRemoteDataSource()
+    @Inject lateinit var remoteDataSource: ForecastRemoteDataSource
+    @Inject lateinit var localDataSource: ForecastLocalDataSource
 
     fun getForecast(query: String) : Observable<ForecastResponse> {
         //always set exception for empty search query
@@ -22,7 +24,7 @@ class ForecastRepository @Inject constructor(private val netManager: NetManager)
             return Observable.just(ForecastResponse(EmptySearchQueryException()))
         }
 
-        return ForecastLocalDataSource.tryGetFromCache(query) ?:
+        return localDataSource.tryGetFromCache(query) ?:
             if(!netManager.isConnectedToInternet){
                 //set exception for network request if there is no internet connection
                 Observable.just(ForecastResponse(NoInternetConnectionException()))
@@ -31,15 +33,16 @@ class ForecastRepository @Inject constructor(private val netManager: NetManager)
                         .observeOn(AndroidSchedulers.mainThread())
                         .doOnNext{
                             it.forecast?.let {
-                                ForecastLocalDataSource.save(query, it)
+                                localDataSource.save(query, it)
                             }
                         }
             }
     }
 }
 
-object ForecastLocalDataSource {
-    private const val lifetime = 300_000.0
+@Singleton
+class ForecastLocalDataSource @Inject constructor(){
+    private val lifetime = 300_000.0
     private var lastReceivedForecast: ForecastCached? = null
 
     fun tryGetFromCache(query: String) : Observable<ForecastResponse>? {
@@ -58,7 +61,7 @@ object ForecastLocalDataSource {
     }
 }
 
-class ForecastRemoteDataSource {
+class ForecastRemoteDataSource @Inject constructor(){
 
     fun requestFromServer(query: String) : Observable<ForecastResponse> {
         val api = ServiceGenerator.createService(Api::class.java)
