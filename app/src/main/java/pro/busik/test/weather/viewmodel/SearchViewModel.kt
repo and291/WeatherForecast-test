@@ -13,6 +13,7 @@ import io.reactivex.observers.DisposableObserver
 import pro.busik.test.weather.model.ForecastItem
 import pro.busik.test.weather.model.ForecastResponse
 import pro.busik.test.weather.model.repository.ForecastRepository
+import pro.busik.test.weather.model.repository.NetManager
 import pro.busik.test.weather.utils.SafeLog
 import pro.busik.test.weather.utils.plusAssign
 import java.util.concurrent.TimeUnit
@@ -45,7 +46,8 @@ class SearchViewModel(application: Application) : AndroidViewModel(application) 
                 .observeOn(AndroidSchedulers.mainThread())
                 .doOnNext { isLoading.set(true) }
                 .switchMap {
-                    return@switchMap ForecastRepository().getForecast(it.queryText().toString())
+                    return@switchMap ForecastRepository(NetManager(getApplication()))
+                            .getForecast(it.queryText().toString())
                 }
                 .observeOn(AndroidSchedulers.mainThread())
                 .doOnNext{ isLoading.set(false) }

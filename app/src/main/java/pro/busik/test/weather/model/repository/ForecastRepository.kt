@@ -7,17 +7,23 @@ import pro.busik.test.weather.model.exceptions.EmptySearchQueryException
 import pro.busik.test.weather.model.Forecast
 import pro.busik.test.weather.model.ForecastResponse
 import pro.busik.test.weather.model.ForecastCached
+import pro.busik.test.weather.model.exceptions.NoInternetConnectionException
 import pro.busik.test.weather.refrofit.Api
 import pro.busik.test.weather.refrofit.ServiceGenerator
 import pro.busik.test.weather.utils.SafeLog
 
-class ForecastRepository{
+class ForecastRepository(private val netManager: NetManager) {
     private val remoteDataSource = ForecastRemoteDataSource()
 
     fun getForecast(query: String) : Observable<ForecastResponse> {
         //always set exception for empty search query
         if(query.isEmpty()){
             return Observable.just(ForecastResponse(EmptySearchQueryException()))
+        }
+
+        //set exception if there is no internet connection
+        if(!netManager.isConnectedToInternet){
+            return Observable.just(ForecastResponse(NoInternetConnectionException()))
         }
 
         return ForecastLocalDataSource.tryGetFromCache(query) ?:
