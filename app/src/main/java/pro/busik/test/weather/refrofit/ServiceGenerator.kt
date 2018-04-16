@@ -7,10 +7,13 @@ import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.util.*
+import javax.inject.Inject
+import javax.inject.Singleton
 
-object ServiceGenerator {
+@Singleton
+class ServiceGenerator @Inject constructor() {
 
-    private const val API_BASE_URL = "http://api.openweathermap.org/"
+    private val API_BASE_URL = "http://api.openweathermap.org/"
 
     private val gsonBuilder = GsonBuilder()
             .registerTypeAdapter(Date::class.java, JsonDeserializer<Date> { json, _, _ ->

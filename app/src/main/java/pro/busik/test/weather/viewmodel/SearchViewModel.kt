@@ -13,12 +13,13 @@ import io.reactivex.observers.DisposableObserver
 import pro.busik.test.weather.model.ForecastItem
 import pro.busik.test.weather.model.ForecastResponse
 import pro.busik.test.weather.model.repository.ForecastRepository
-import pro.busik.test.weather.model.repository.NetManager
 import pro.busik.test.weather.utils.SafeLog
 import pro.busik.test.weather.utils.plusAssign
 import java.util.concurrent.TimeUnit
 
-class SearchViewModel(application: Application) : AndroidViewModel(application) {
+class SearchViewModel(application: Application,
+                      private val forecastRepository: ForecastRepository)
+    : AndroidViewModel(application) {
 
     var isLoading = ObservableField(false)
     var labelShown = ObservableField(true)
@@ -42,11 +43,18 @@ class SearchViewModel(application: Application) : AndroidViewModel(application) 
     fun setSearchView(searchView: SearchView){
         compositeDisposable += RxSearchView.queryTextChangeEvents(searchView)
                 .debounce(300, TimeUnit.MILLISECONDS)
-                .distinctUntilChanged()
+                .distinctUntilChanged { old, new ->
+                    //distinctUntilChanged if not submitted
+                    return@distinctUntilChanged if(new.isSubmitted){
+                         false
+                    } else {
+                        old.queryText().toString() == new.queryText().toString()
+                    }
+                }
                 .observeOn(AndroidSchedulers.mainThread())
                 .doOnNext { isLoading.set(true) }
                 .switchMap {
-                    return@switchMap ForecastRepository(NetManager(getApplication()))
+                    return@switchMap forecastRepository
                             .getForecast(it.queryText().toString())
                 }
                 .observeOn(AndroidSchedulers.mainThread())
