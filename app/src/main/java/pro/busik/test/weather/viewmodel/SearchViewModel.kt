@@ -21,9 +21,9 @@ import java.util.concurrent.TimeUnit
 class SearchViewModel(application: Application) : AndroidViewModel(application) {
 
     var isLoading = ObservableField(false)
-    var items = MutableLiveData<List<ForecastItem>>()
-    var labelShown = ObservableField(false)
+    var labelShown = ObservableField(true)
     var labelMessage = ObservableField<String>()
+    var forecastItems = MutableLiveData<List<ForecastItem>>()
 
     private val compositeDisposable = CompositeDisposable()
 
@@ -33,9 +33,9 @@ class SearchViewModel(application: Application) : AndroidViewModel(application) 
                 SafeLog.v("isLoading=${isLoading.get()}")
             }
         })
-        items.observeForever {
+        forecastItems.observeForever {
             SafeLog.v("Displayed ${it?.size} response")
-            labelShown.set(it == null || it.size == 0)
+            labelShown.set(it == null || it.isEmpty())
         }
     }
 
@@ -58,17 +58,12 @@ class SearchViewModel(application: Application) : AndroidViewModel(application) 
 
                     override fun onNext(value: ForecastResponse?) {
                         value?.let {
-                            it.exception?.let {
-                                SafeLog.v("", it)
-                            }
+                            //log exceptions
+                            it.exception?.let { SafeLog.v("onNext()", it) }
+
+                            //apply data
                             labelMessage.set(it.exception?.getLabelMessage(getApplication()))
-
-                            var list: ArrayList<ForecastItem> = arrayListOf()
-                            it.forecast?.let {
-                                list = it.list
-                            }
-
-                            items.value = list
+                            forecastItems.value = it.forecast?.list ?: arrayListOf()
                         }
                     }
 

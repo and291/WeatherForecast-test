@@ -6,18 +6,19 @@ import pro.busik.test.weather.R
 
 class DefinedException(cause: Throwable) : Exception(cause){
     fun getLabelMessage(context: Context) : String {
-        if(cause is HttpException){
-            if(cause.code() == 404){
-                return context.getString(R.string.exception_city_not_found)
+        //define proper string resource
+        val stringId = when (cause) {
+            is HttpException -> {
+                if(cause.code() == 404)
+                    R.string.exception_city_not_found
+                R.string.exception_server_connection_error
             }
-            return context.getString(R.string.exception_server_connection_error)
+            is EmptySearchQueryException -> R.string.exception_empty_search_query
+            is NoInternetConnectionException -> R.string.exception_no_internet
+            else -> R.string.exception_unknown
         }
-        if(cause is EmptySearchQueryException){
-            return context.getString(R.string.exception_empty_search_query)
-        }
-        if(cause is NoInternetConnectionException) {
-            return context.getString(R.string.exception_no_internet)
-        }
-        return context.getString(R.string.exception_unknown)
+
+        //return proper text
+        return context.getString(stringId)
     }
 }

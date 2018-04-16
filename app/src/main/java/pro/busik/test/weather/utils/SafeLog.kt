@@ -14,7 +14,7 @@ object SafeLog {
 
     fun v(message: String, throwable: Throwable){
         if(BuildConfig.DEBUG) {
-            Log.v(tag, "[${Thread.currentThread().name}] $message $throwable")
+            Log.v(tag, "[${Thread.currentThread().name}] $message", throwable)
         }
     }
 }

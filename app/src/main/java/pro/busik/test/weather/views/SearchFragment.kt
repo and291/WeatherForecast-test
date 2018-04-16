@@ -61,7 +61,7 @@ class SearchFragment : Fragment() {
         rvForecastItems.adapter = adapter
         rvForecastItems.addItemDecoration(DividerItemDecoration(context, LinearLayout.VERTICAL))
 
-        viewModel.items.observe(this, Observer<List<ForecastItem>> {
+        viewModel.forecastItems.observe(this, Observer<List<ForecastItem>> {
             it?.let {
                 val diff = DiffUtil.calculateDiff(adapter.getDiffCallback(it))
                 adapter.update(diff, it)

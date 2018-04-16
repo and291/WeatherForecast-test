@@ -10,7 +10,7 @@ import java.util.*
 
 object ServiceGenerator {
 
-    private val API_BASE_URL = "http://api.openweathermap.org/"
+    private const val API_BASE_URL = "http://api.openweathermap.org/"
 
     private val gsonBuilder = GsonBuilder()
             .registerTypeAdapter(Date::class.java, JsonDeserializer<Date> { json, _, _ ->

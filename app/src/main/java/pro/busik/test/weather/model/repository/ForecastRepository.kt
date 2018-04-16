@@ -63,7 +63,6 @@ class ForecastRemoteDataSource {
         val api = ServiceGenerator.createService(Api::class.java)
         return api.forecast(query)
                 .subscribeOn(Schedulers.io())
-                .doOnSubscribe { SafeLog.v("Forecast request: onSubscribe") }
                 .flatMap {
                     SafeLog.v("Forecast request: api response converted to ForecastResponse")
                     return@flatMap Observable.just(ForecastResponse(it))
