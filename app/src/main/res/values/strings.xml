@@ -1,6 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Weather forecast</string>
     <string name="action_quit">Quit</string>
     <string name="search_title">Search</string>
     <string name="search_hint">Search by city name</string>
+
+    <string name="exception_city_not_found">City not found</string>
+    <string name="exception_server_connection_error">Server connection error</string>
+    <string name="exception_empty_search_query">Start searching by city name</string>
+    <string name="exception_no_internet">There is no internet connection</string>
+    <string name="exception_unknown">Unknown error occurred</string>
 </resources>

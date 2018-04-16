@@ -4,4 +4,10 @@
     <string name="action_quit">Выйти</string>
     <string name="search_title">Поиск</string>
     <string name="search_hint">Поиск по названию города</string>
+
+    <string name="exception_city_not_found">Город не найден</string>
+    <string name="exception_server_connection_error">Ошибка подключения к серверу</string>
+    <string name="exception_empty_search_query">Введите название города</string>
+    <string name="exception_no_internet">Нет подключения к сети Интернет</string>
+    <string name="exception_unknown">Произошла неизвестная ошибка</string>
 </resources>

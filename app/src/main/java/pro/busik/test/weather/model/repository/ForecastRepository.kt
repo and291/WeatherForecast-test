@@ -3,6 +3,7 @@ package pro.busik.test.weather.model.repository
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
+import pro.busik.test.weather.model.exceptions.EmptySearchQueryException
 import pro.busik.test.weather.model.Forecast
 import pro.busik.test.weather.model.ForecastResponse
 import pro.busik.test.weather.model.ForecastCached
@@ -16,8 +17,7 @@ class ForecastRepository{
     fun getForecast(query: String) : Observable<ForecastResponse> {
         //always set exception for empty search query
         if(query.isEmpty()){
-            val error = Exception("Empty search query")
-            return Observable.just(ForecastResponse(error))
+            return Observable.just(ForecastResponse(EmptySearchQueryException()))
         }
 
         return ForecastLocalDataSource.tryGetFromCache(query) ?:

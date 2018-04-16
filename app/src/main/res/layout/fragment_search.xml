@@ -21,6 +21,7 @@
             android:id="@+id/rvForecastItems"
             android:layout_width="0dp"
             android:layout_height="0dp"
+            android:visibility="@{searchViewModel.labelShown ? View.GONE : View.VISIBLE}"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -32,6 +33,17 @@
             android:layout_height="wrap_content"
             android:visibility="@{searchViewModel.isLoading ? View.VISIBLE : View.GONE}"
             tools:visibility="visible"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"/>
+
+        <TextView
+            android:id="@+id/tvLabelMessage"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@{searchViewModel.labelMessage}"
+            android:visibility="@{searchViewModel.labelShown ? View.VISIBLE : View.GONE}"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"

@@ -21,6 +21,8 @@ class SearchViewModel(application: Application) : AndroidViewModel(application) 
 
     var isLoading = ObservableField(false)
     var items = MutableLiveData<List<ForecastItem>>()
+    var labelShown = ObservableField(false)
+    var labelMessage = ObservableField<String>()
 
     private val compositeDisposable = CompositeDisposable()
 
@@ -31,7 +33,8 @@ class SearchViewModel(application: Application) : AndroidViewModel(application) 
             }
         })
         items.observeForever {
-            SafeLog.v("Displayed ${it?.size} items")
+            SafeLog.v("Displayed ${it?.size} response")
+            labelShown.set(it == null || it.size == 0)
         }
     }
 
@@ -49,15 +52,14 @@ class SearchViewModel(application: Application) : AndroidViewModel(application) 
                 .subscribeWith(object : DisposableObserver<ForecastResponse>() {
                     override fun onComplete() {
                         SafeLog.v("onComplete()")
-                        //TODO notify user
                     }
 
                     override fun onNext(value: ForecastResponse?) {
-                        //SafeLog.v("onNext(): $value")
                         value?.let {
-                            it.throwable?.let {
+                            it.exception?.let {
                                 SafeLog.v("", it)
                             }
+                            labelMessage.set(it.exception?.getLabelMessage(getApplication()))
 
                             var list: ArrayList<ForecastItem> = arrayListOf()
                             it.forecast?.let {
@@ -70,7 +72,6 @@ class SearchViewModel(application: Application) : AndroidViewModel(application) 
 
                     override fun onError(e: Throwable?) {
                         SafeLog.v("onError() $e")
-                        //TODO notify user
                     }
                 })
     }
