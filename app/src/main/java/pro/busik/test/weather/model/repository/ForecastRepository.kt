@@ -11,8 +11,9 @@ import pro.busik.test.weather.model.exceptions.NoInternetConnectionException
 import pro.busik.test.weather.refrofit.Api
 import pro.busik.test.weather.refrofit.ServiceGenerator
 import pro.busik.test.weather.utils.SafeLog
+import javax.inject.Inject
 
-class ForecastRepository(private val netManager: NetManager) {
+class ForecastRepository @Inject constructor(private val netManager: NetManager) {
     private val remoteDataSource = ForecastRemoteDataSource()
 
     fun getForecast(query: String) : Observable<ForecastResponse> {

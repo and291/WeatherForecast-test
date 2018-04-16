@@ -43,9 +43,9 @@ internal abstract class SearchFragmentModule{
     companion object {
         @JvmStatic
         @Provides
-        internal fun providesSearchViewModelFactory(application: SearchApplication)
+        internal fun providesSearchViewModelFactory(application: SearchApplication, forecastRepository: ForecastRepository)
                 : SearchViewModelFactory {
-            return SearchViewModelFactory(application, ForecastRepository(NetManager(application)))
+            return SearchViewModelFactory(application, forecastRepository)
         }
     }
 
