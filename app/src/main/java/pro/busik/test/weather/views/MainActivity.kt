@@ -11,10 +11,20 @@ import pro.busik.test.weather.R
 
 class MainActivity : DaggerAppCompatActivity() {
 
+    private val fragmentContainerId = R.id.fragmentContainer
+    private val fm = supportFragmentManager
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         setSupportActionBar(toolbar)
+
+        val fragment = fm.findFragmentById(fragmentContainerId)
+        if(fragment == null){
+            fm.beginTransaction()
+                    .add(fragmentContainerId, SearchFragment.newInstance("Москва"))
+                    .commit()
+        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
