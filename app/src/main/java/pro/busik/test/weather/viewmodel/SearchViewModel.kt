@@ -27,6 +27,7 @@ class SearchViewModel(application: Application,
     var forecastItems = MutableLiveData<List<ForecastItem>>()
 
     private val compositeDisposable = CompositeDisposable()
+    private var currentQuery: String? = null //used for input filtering
 
     init {
         isLoading.addOnPropertyChangedCallback(object : Observable.OnPropertyChangedCallback(){
@@ -43,15 +44,21 @@ class SearchViewModel(application: Application,
     fun setSearchView(searchView: SearchView){
         compositeDisposable += RxSearchView.queryTextChangeEvents(searchView)
                 .debounce(300, TimeUnit.MILLISECONDS)
-                .distinctUntilChanged { old, new ->
-                    //distinctUntilChanged if not submitted
-                    return@distinctUntilChanged if(new.isSubmitted){
-                         false
-                    } else {
-                        old.queryText().toString() == new.queryText().toString()
-                    }
-                }
                 .observeOn(AndroidSchedulers.mainThread())
+                .filter {
+                    //distinct until query changed if not submitted
+                    val result = if(it.isSubmitted) true else currentQuery != it.queryText().toString()
+                    currentQuery = it.queryText().toString()
+                    return@filter result
+                }
+//                .distinctUntilChanged { old, new ->
+//                    //distinctUntilChanged if not submitted
+//                    return@distinctUntilChanged if(new.isSubmitted){
+//                         false
+//                    } else {
+//                        old.queryText().toString() == new.queryText().toString() //doesn't work on second emit (bug?)
+//                    }
+//                }
                 .doOnNext { isLoading.set(true) }
                 .switchMap {
                     return@switchMap forecastRepository
