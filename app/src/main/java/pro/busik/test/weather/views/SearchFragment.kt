@@ -20,9 +20,14 @@ import pro.busik.test.weather.utils.SafeLog
 import pro.busik.test.weather.viewmodel.SearchViewModel
 import android.app.SearchManager
 import android.content.Context
+import android.support.v4.widget.SimpleCursorAdapter
+import android.widget.Toast
 import dagger.android.support.DaggerFragment
+import pro.busik.test.weather.model.City
 import pro.busik.test.weather.viewmodel.SearchViewModelFactory
 import javax.inject.Inject
+import android.database.MatrixCursor
+import android.provider.BaseColumns
 
 class SearchFragment : DaggerFragment() {
 
@@ -33,6 +38,7 @@ class SearchFragment : DaggerFragment() {
     private var searchView: SearchView? = null
 
     private lateinit var viewModel: SearchViewModel
+    private lateinit var suggestionAdapter: SimpleCursorAdapter
 
     @Inject lateinit var searchViewModelFactory: SearchViewModelFactory
 
@@ -72,6 +78,31 @@ class SearchFragment : DaggerFragment() {
                 adapter.update(diff, it)
             }
         })
+
+        suggestionAdapter = SimpleCursorAdapter(context,
+                android.R.layout.simple_list_item_1,
+                null,
+                arrayOf(SearchManager.SUGGEST_COLUMN_TEXT_1),
+                intArrayOf(android.R.id.text1),
+                0)
+
+        viewModel.citySuggestions.observe(this, Observer<List<City>> {
+            it?.let {
+                Toast.makeText(context, "Found ${it.size} cities", Toast.LENGTH_LONG)
+                        .show()
+
+                val columns = arrayOf(
+                        BaseColumns._ID,
+                        SearchManager.SUGGEST_COLUMN_TEXT_1,
+                        SearchManager.SUGGEST_COLUMN_INTENT_DATA)
+
+                val cursor = MatrixCursor(columns)
+                for (i in 0 until it.size) {
+                    cursor.addRow(arrayOf(i, it[i].name, it))
+                }
+                suggestionAdapter.swapCursor(cursor)
+            }
+        })
     }
 
     override fun onCreateOptionsMenu(menu: Menu?, inflater: MenuInflater?) {
@@ -94,6 +125,9 @@ class SearchFragment : DaggerFragment() {
             searchMenuItem.expandActionView()
             searchView.setQuery(initialSearchQuery, false)
             searchView.clearFocus()
+
+            //set suggestion adapter
+            searchView.suggestionsAdapter = suggestionAdapter
 
             viewModel.setSearchView(searchView)
             this.searchView = searchView
