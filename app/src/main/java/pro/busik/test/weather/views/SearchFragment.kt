@@ -31,12 +31,24 @@ import android.provider.BaseColumns
 
 class SearchFragment : DaggerFragment() {
 
+    companion object {
+        private const val ARG_INITIAL_SEARCH_QUERY = "ARG_INITIAL_SEARCH_QUERY"
+
+        fun newInstance(initialSearchQuery: String): SearchFragment {
+            val bundle = Bundle()
+            bundle.putString(ARG_INITIAL_SEARCH_QUERY, initialSearchQuery)
+            val fragment = SearchFragment()
+            fragment.arguments = bundle
+            return fragment
+        }
+    }
+
     private val searchQueryKey = "SearchQueryKey"
     private val adapter = Adapter(arrayListOf())
 
-    private var initialSearchQuery: String = "Москва"
     private var searchView: SearchView? = null
 
+    private lateinit var initialSearchQuery: String
     private lateinit var viewModel: SearchViewModel
     private lateinit var suggestionAdapter: SimpleCursorAdapter
 
@@ -48,14 +60,18 @@ class SearchFragment : DaggerFragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        //check argument exists and set search query variable
+        arguments.let {
+            if(it == null || !it.containsKey(ARG_INITIAL_SEARCH_QUERY)){
+                throw RuntimeException("Initial search query not set")
+            }
+            initialSearchQuery = savedInstanceState?.getString(searchQueryKey)
+                    ?: it.getString(ARG_INITIAL_SEARCH_QUERY)
+        }
+
+        //get view model
         viewModel = ViewModelProviders.of(this, searchViewModelFactory)
                 .get(SearchViewModel::class.java)
-
-        //Restore search query
-        savedInstanceState?.let {
-            initialSearchQuery = it.getString(searchQueryKey)
-            SafeLog.v("Search query restored: $initialSearchQuery")
-        }
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
