@@ -17,13 +17,15 @@ class MainActivity : DaggerAppCompatActivity() {
     private val fragmentContainerId = R.id.fragmentContainer
     private val fm = supportFragmentManager
 
-    private var initialQuery: String = getString(R.string.default_city_name)
+    private lateinit var initialQuery: String
     private var selectedCity: City? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         setSupportActionBar(toolbar)
+
+        initialQuery = getString(R.string.default_city_name)
 
         getIntentData(intent)
 
