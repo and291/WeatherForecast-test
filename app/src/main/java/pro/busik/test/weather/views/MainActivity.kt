@@ -1,7 +1,6 @@
 package pro.busik.test.weather.views
 
 import android.os.Bundle
-import android.support.v7.app.AppCompatActivity
 import android.view.Menu
 import android.view.MenuItem
 import dagger.android.support.DaggerAppCompatActivity
@@ -18,26 +17,34 @@ class MainActivity : DaggerAppCompatActivity() {
     private val fragmentContainerId = R.id.fragmentContainer
     private val fm = supportFragmentManager
 
+    private var initialQuery: String = getString(R.string.default_city_name)
+    private var selectedCity: City? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         setSupportActionBar(toolbar)
-        handleIntent(intent)
+
+        getIntentData(intent)
+
+        if(fm.findFragmentById(fragmentContainerId) == null){
+            replaceFragment()
+        }
+
+        //onSearchRequested()
     }
 
     override fun onNewIntent(intent: Intent?) {
         super.onNewIntent(intent)
         this.intent = intent
-        handleIntent(intent!!)
+        getIntentData(intent!!)
+        replaceFragment()
     }
 
-    private fun handleIntent(intent: Intent){
-        var query: String = getString(R.string.default_city_name)
-        var selectedCity: City? = null
-
+    private fun getIntentData(intent: Intent){
         // Get the intent, verify the action and get the query
         when (intent.action){
-            Intent.ACTION_SEARCH -> query = intent.getStringExtra(SearchManager.QUERY)
+            Intent.ACTION_SEARCH -> initialQuery = intent.getStringExtra(SearchManager.QUERY)
             getString(R.string.intent_search_by_city) -> {
                 //can't pass parcelable because of MatrixCursor:
                 //https://stackoverflow.com/questions/3034575/passing-binary-blob-through-a-content-provider/3034717#3034717
@@ -45,9 +52,11 @@ class MainActivity : DaggerAppCompatActivity() {
                 selectedCity = Gson().fromJson<City>(json, City::class.java)
             }
         }
-        
+    }
+
+    private fun replaceFragment(){
         fm.beginTransaction()
-                .replace(fragmentContainerId, SearchFragment.newInstance(query))
+                .replace(fragmentContainerId, SearchFragment.newInstance(initialQuery, selectedCity))
                 .commit()
     }
 
