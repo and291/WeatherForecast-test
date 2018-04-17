@@ -42,7 +42,7 @@ class SearchViewModel(application: Application,
     }
 
     fun setSearchView(searchView: SearchView){
-        compositeDisposable += RxSearchView.queryTextChangeEvents(searchView)
+        val sharedObservable = RxSearchView.queryTextChangeEvents(searchView)
                 .debounce(300, TimeUnit.MILLISECONDS)
                 .observeOn(AndroidSchedulers.mainThread())
                 .filter {
@@ -51,6 +51,9 @@ class SearchViewModel(application: Application,
                     currentQuery = it.queryText().toString()
                     return@filter result
                 }
+                .share()
+
+        compositeDisposable += sharedObservable
 //                .distinctUntilChanged { old, new ->
 //                    //distinctUntilChanged if not submitted
 //                    return@distinctUntilChanged if(new.isSubmitted){
