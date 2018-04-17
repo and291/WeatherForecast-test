@@ -34,10 +34,12 @@ class SearchFragment : DaggerFragment() {
 
     companion object {
         private const val ARG_INITIAL_SEARCH_QUERY = "ARG_INITIAL_SEARCH_QUERY"
+        private const val ARG_SELECTED_CITY = "ARG_SELECTED_CITY"
 
-        fun newInstance(initialSearchQuery: String): SearchFragment {
+        fun newInstance(initialSearchQuery: String, city: City?): SearchFragment {
             val bundle = Bundle()
             bundle.putString(ARG_INITIAL_SEARCH_QUERY, initialSearchQuery)
+            bundle.putParcelable(ARG_SELECTED_CITY, city)
             val fragment = SearchFragment()
             fragment.arguments = bundle
             return fragment
