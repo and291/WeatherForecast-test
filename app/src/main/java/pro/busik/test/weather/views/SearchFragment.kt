@@ -28,6 +28,7 @@ import pro.busik.test.weather.viewmodel.SearchViewModelFactory
 import javax.inject.Inject
 import android.database.MatrixCursor
 import android.provider.BaseColumns
+import com.google.gson.Gson
 
 class SearchFragment : DaggerFragment() {
 
@@ -110,11 +111,12 @@ class SearchFragment : DaggerFragment() {
                 val columns = arrayOf(
                         BaseColumns._ID,
                         SearchManager.SUGGEST_COLUMN_TEXT_1,
-                        SearchManager.SUGGEST_COLUMN_INTENT_DATA)
+                        SearchManager.SUGGEST_COLUMN_INTENT_EXTRA_DATA)
 
                 val cursor = MatrixCursor(columns)
+                val gson = Gson()
                 for (i in 0 until it.size) {
-                    cursor.addRow(arrayOf(i, it[i].name, it))
+                    cursor.addRow(arrayOf(i, it[i].name, gson.toJson(it[i])))
                 }
                 suggestionAdapter.swapCursor(cursor)
             }

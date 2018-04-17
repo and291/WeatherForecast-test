@@ -10,6 +10,8 @@ import kotlinx.android.synthetic.main.activity_main.*
 import pro.busik.test.weather.R
 import android.app.SearchManager
 import android.content.Intent
+import com.google.gson.Gson
+import pro.busik.test.weather.model.City
 
 class MainActivity : DaggerAppCompatActivity() {
 
@@ -30,11 +32,18 @@ class MainActivity : DaggerAppCompatActivity() {
     }
 
     private fun handleIntent(intent: Intent){
-        var query = "Москва"
-        // Get the intent, verify the action and get the query
-        if (Intent.ACTION_SEARCH == intent.action) {
-            query = intent.getStringExtra(SearchManager.QUERY)
+        var query: String = getString(R.string.default_city_name)
+        var selectedCity: City? = null
 
+        // Get the intent, verify the action and get the query
+        when (intent.action){
+            Intent.ACTION_SEARCH -> query = intent.getStringExtra(SearchManager.QUERY)
+            getString(R.string.intent_search_by_city) -> {
+                //can't pass parcelable because of MatrixCursor:
+                //https://stackoverflow.com/questions/3034575/passing-binary-blob-through-a-content-provider/3034717#3034717
+                val json = intent.getStringExtra(SearchManager.EXTRA_DATA_KEY)
+                selectedCity = Gson().fromJson<City>(json, City::class.java)
+            }
         }
         
         fm.beginTransaction()

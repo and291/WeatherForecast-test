@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="intent_search_by_city">pro.busik.test.weather.action.SEARCH_BY_CITY</string>
+</resources>
