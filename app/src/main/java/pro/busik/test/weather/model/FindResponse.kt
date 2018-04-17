@@ -1,6 +1,11 @@
 package pro.busik.test.weather.model
 
-data class FindResponse(val cod: Int,
-                        val count: Int,
-                        val list: ArrayList<City>?,
-                        val message: String)
+import pro.busik.test.weather.model.exceptions.DefinedException
+
+data class FindResponse(val find: Find?,
+                        val exception: DefinedException?)
+{
+    constructor(find: Find) : this(find, null)
+
+    constructor(throwable: Throwable) : this(null, DefinedException(throwable))
+}
