@@ -8,6 +8,8 @@ import dagger.android.support.DaggerAppCompatActivity
 
 import kotlinx.android.synthetic.main.activity_main.*
 import pro.busik.test.weather.R
+import android.app.SearchManager
+import android.content.Intent
 
 class MainActivity : DaggerAppCompatActivity() {
 
@@ -18,13 +20,26 @@ class MainActivity : DaggerAppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         setSupportActionBar(toolbar)
+        handleIntent(intent)
+    }
 
-        val fragment = fm.findFragmentById(fragmentContainerId)
-        if(fragment == null){
-            fm.beginTransaction()
-                    .add(fragmentContainerId, SearchFragment.newInstance("Москва"))
-                    .commit()
+    override fun onNewIntent(intent: Intent?) {
+        super.onNewIntent(intent)
+        this.intent = intent
+        handleIntent(intent!!)
+    }
+
+    private fun handleIntent(intent: Intent){
+        var query = "Москва"
+        // Get the intent, verify the action and get the query
+        if (Intent.ACTION_SEARCH == intent.action) {
+            query = intent.getStringExtra(SearchManager.QUERY)
+
         }
+        
+        fm.beginTransaction()
+                .replace(fragmentContainerId, SearchFragment.newInstance(query))
+                .commit()
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
