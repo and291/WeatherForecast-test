@@ -6,5 +6,5 @@ import java.util.*
 data class ForecastItem(val dt: Date,
                         val main: ForecastItemMain) {
     fun getFormattedDate() : String
-            = SimpleDateFormat("HH:mm:ss - dd MMMM ", Locale.getDefault()).format(dt)
+            = SimpleDateFormat("HH:mm - dd MMMM ", Locale.getDefault()).format(dt)
 }
