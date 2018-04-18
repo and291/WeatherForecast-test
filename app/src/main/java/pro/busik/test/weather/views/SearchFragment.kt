@@ -69,6 +69,7 @@ class SearchFragment : DaggerFragment() {
                 throw RuntimeException("Initial search query not set")
             }
             initialSearchQuery = savedInstanceState?.getString(searchQueryKey)
+                    ?:arguments?.getParcelable<City>(ARG_SELECTED_CITY)?.name
                     ?: it.getString(ARG_INITIAL_SEARCH_QUERY)
         }
 
