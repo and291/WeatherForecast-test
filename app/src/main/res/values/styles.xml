@@ -6,6 +6,10 @@
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
+
+        <!-- Suggestions style -->
+        <item name="autoCompleteTextViewStyle">@style/CustomAutoCompleteTextViewStyle</item>
+        <item name="textAppearanceSearchResultTitle">@style/CustomSearchResult</item>
     </style>
 
     <style name="AppTheme.NoActionBar">
@@ -16,5 +20,13 @@
     <style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar"/>
 
     <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Light"/>
+
+    <style name="CustomAutoCompleteTextViewStyle" parent="Widget.AppCompat.Light.AutoCompleteTextView">
+        <item name="android:popupBackground">@android:color/background_light</item>
+    </style>
+
+    <style name="CustomSearchResult" parent="TextAppearance.AppCompat.SearchResult.Title">
+        <item name="android:textColor">@android:color/primary_text_light</item>
+    </style>
 
 </resources>
