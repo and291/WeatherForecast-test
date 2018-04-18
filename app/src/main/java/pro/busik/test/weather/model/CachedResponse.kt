@@ -1,10 +1,10 @@
 package pro.busik.test.weather.model
 
 import io.reactivex.Observable
-import pro.busik.test.weather.model.data.apiresponse.ApiResponse
+import pro.busik.test.weather.model.data.ParameterSet
 import java.util.*
 
-class CachedResponse<T : ApiResponse<T>>(
+class CachedResponse<T>(
         private val parameterSet: ParameterSet<T>,
         private val apiResponse: T
 ){

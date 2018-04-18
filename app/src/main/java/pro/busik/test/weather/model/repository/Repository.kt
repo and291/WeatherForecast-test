@@ -2,13 +2,12 @@ package pro.busik.test.weather.model.repository
 
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
-import pro.busik.test.weather.model.data.apiresponse.ApiResponse
 import pro.busik.test.weather.model.ResponseResult
-import pro.busik.test.weather.model.ParameterSet
+import pro.busik.test.weather.model.data.ParameterSet
 import pro.busik.test.weather.model.exceptions.EmptySearchQueryException
 import pro.busik.test.weather.model.exceptions.NoInternetConnectionException
 
-abstract class Repository<T : ApiResponse<T>> constructor(
+abstract class Repository<T> constructor(
         private val netManager: NetManager,
         private val localDataSource: LocalDataSource<T>,
         private val remoteDataSource: RemoteDataSource<T>

@@ -1,8 +1,8 @@
 package pro.busik.test.weather.model.repository.find
 
-import pro.busik.test.weather.model.data.apiresponse.Find
+import pro.busik.test.weather.model.data.Find
 import pro.busik.test.weather.model.repository.NetManager
-import pro.busik.test.weather.model.ParameterSet
+import pro.busik.test.weather.model.data.ParameterSet
 import pro.busik.test.weather.model.ParameterGenerator
 import pro.busik.test.weather.model.repository.Repository
 import javax.inject.Inject

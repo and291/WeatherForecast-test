@@ -14,8 +14,8 @@ import pro.busik.test.weather.model.*
 import pro.busik.test.weather.model.repository.find.FindRepository
 import pro.busik.test.weather.model.repository.forecast.ForecastRepository
 import pro.busik.test.weather.model.data.City
-import pro.busik.test.weather.model.data.apiresponse.Find
-import pro.busik.test.weather.model.data.apiresponse.Forecast
+import pro.busik.test.weather.model.data.Find
+import pro.busik.test.weather.model.data.Forecast
 import pro.busik.test.weather.model.data.ForecastItem
 import pro.busik.test.weather.model.ParameterGenerator
 import pro.busik.test.weather.utils.SafeLog

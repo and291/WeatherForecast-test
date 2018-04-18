@@ -3,8 +3,9 @@ package pro.busik.test.weather.model
 import android.content.Context
 import pro.busik.test.weather.R
 import pro.busik.test.weather.model.data.City
-import pro.busik.test.weather.model.data.apiresponse.Find
-import pro.busik.test.weather.model.data.apiresponse.Forecast
+import pro.busik.test.weather.model.data.Find
+import pro.busik.test.weather.model.data.Forecast
+import pro.busik.test.weather.model.data.ParameterSet
 import javax.inject.Inject
 import javax.inject.Singleton
 

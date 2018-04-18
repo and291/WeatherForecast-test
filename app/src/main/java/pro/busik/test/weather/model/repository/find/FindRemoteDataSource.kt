@@ -1,8 +1,8 @@
 package pro.busik.test.weather.model.repository.find
 
 import io.reactivex.Observable
-import pro.busik.test.weather.model.data.apiresponse.Find
-import pro.busik.test.weather.model.ParameterSet
+import pro.busik.test.weather.model.data.Find
+import pro.busik.test.weather.model.data.ParameterSet
 import pro.busik.test.weather.model.repository.RemoteDataSource
 import pro.busik.test.weather.refrofit.Api
 import pro.busik.test.weather.refrofit.ServiceGenerator

@@ -13,23 +13,21 @@ import javax.inject.Singleton
 @Singleton
 class ServiceGenerator @Inject constructor() {
 
-    private val API_BASE_URL = "http://api.openweathermap.org/"
-
+    private val apiBaseUrl = "http://api.openweathermap.org/"
     private val gsonBuilder = GsonBuilder()
             .registerTypeAdapter(Date::class.java, JsonDeserializer<Date> { json, _, _ ->
                 Date(json!!.asLong * 1000)
             })
 
-    private val sHttpClientBuilder = OkHttpClient.Builder()
-
-    private val sRetrofitBuilder = Retrofit.Builder()
-            .addConverterFactory(GsonConverterFactory.create(gsonBuilder.create()))
+    private val httpClientBuilder = OkHttpClient.Builder()
+    private val retrofitBuilder = Retrofit.Builder()
             .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
-            .baseUrl(API_BASE_URL)
+            .addConverterFactory(GsonConverterFactory.create(gsonBuilder.create()))
+            .baseUrl(apiBaseUrl)
 
     fun <S> createService(serviceClass: Class<S>): S {
-        val client = sHttpClientBuilder.build()
-        val retrofit = sRetrofitBuilder.client(client).build()
+        val client = httpClientBuilder.build()
+        val retrofit = retrofitBuilder.client(client).build()
         return retrofit.create(serviceClass)
     }
 }
