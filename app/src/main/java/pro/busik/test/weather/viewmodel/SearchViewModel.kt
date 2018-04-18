@@ -120,7 +120,10 @@ class SearchViewModel(application: Application,
                             it.exception?.let { SafeLog.v("onNext()", it) }
 
                             //apply data
-                            citySuggestions.value = it.data?.list ?: arrayListOf<City>()
+                            //don't show suggestions if there is only one
+                            citySuggestions.value = it.data?.list?.let {
+                                if(it.size == 1) arrayListOf() else it
+                            } ?: arrayListOf()
                         }
                     }
 
