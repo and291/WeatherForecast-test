@@ -99,10 +99,10 @@ class SearchFragment : DaggerFragment() {
         })
 
         suggestionAdapter = SimpleCursorAdapter(context,
-                android.R.layout.simple_list_item_1,
+                android.R.layout.simple_list_item_2,
                 null,
-                arrayOf(SearchManager.SUGGEST_COLUMN_TEXT_1),
-                intArrayOf(android.R.id.text1),
+                arrayOf(SearchManager.SUGGEST_COLUMN_TEXT_1, SearchManager.SUGGEST_COLUMN_TEXT_2),
+                intArrayOf(android.R.id.text1, android.R.id.text2),
                 0)
 
         viewModel.citySuggestions.observe(this, Observer<List<City>> {
@@ -113,12 +113,13 @@ class SearchFragment : DaggerFragment() {
                 val columns = arrayOf(
                         BaseColumns._ID,
                         SearchManager.SUGGEST_COLUMN_TEXT_1,
+                        SearchManager.SUGGEST_COLUMN_TEXT_2,
                         SearchManager.SUGGEST_COLUMN_INTENT_EXTRA_DATA)
 
                 val cursor = MatrixCursor(columns)
                 val gson = Gson()
                 for (i in 0 until it.size) {
-                    cursor.addRow(arrayOf(i, it[i].name, gson.toJson(it[i])))
+                    cursor.addRow(arrayOf(i, it[i].name, "id=${it[i].id}", gson.toJson(it[i])))
                 }
                 suggestionAdapter.swapCursor(cursor)
             }
