@@ -6,6 +6,7 @@ import pro.busik.test.weather.model.data.City
 import pro.busik.test.weather.model.data.Find
 import pro.busik.test.weather.model.data.Forecast
 import pro.busik.test.weather.model.data.ParameterSet
+import pro.busik.test.weather.utils.SafeLog
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -27,12 +28,16 @@ class ParameterGenerator @Inject constructor(context: Context) {
 
         val map = commonMap.toMutableMap()
                 .plus(pair)
+
+        SafeLog.v("Generated [ParameterSet<Forecast>]: $map")
         return ParameterSet(map)
     }
 
     fun generate(query: String) : ParameterSet<Find> {
         val map = commonMap.toMutableMap()
                 .plus(Pair("q", query))
+
+        SafeLog.v("Generated [ParameterSet<Find>]: $map")
         return ParameterSet(map)
     }
 }
