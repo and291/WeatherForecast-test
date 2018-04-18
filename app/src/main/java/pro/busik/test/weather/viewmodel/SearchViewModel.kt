@@ -23,6 +23,7 @@ import pro.busik.test.weather.utils.plusAssign
 import java.util.concurrent.TimeUnit
 
 class SearchViewModel(application: Application,
+                      private val parameterGenerator: ParameterGenerator,
                       private val forecastRepository: ForecastRepository,
                       private val findRepository: FindRepository)
     : AndroidViewModel(application) {
@@ -74,7 +75,7 @@ class SearchViewModel(application: Application,
                 .doOnNext { isLoading.set(true) }
                 .switchMap {
                     return@switchMap forecastRepository
-                            .getData(ParameterGenerator().generate(it.queryText().toString(), selectedCity))
+                            .getData(parameterGenerator.generate(it.queryText().toString(), selectedCity))
                 }
                 .observeOn(AndroidSchedulers.mainThread())
                 .doOnNext{ isLoading.set(false) }
@@ -103,7 +104,7 @@ class SearchViewModel(application: Application,
         compositeDisposable += sharedObservable
                 .switchMap {
                     return@switchMap findRepository
-                            .getData(ParameterGenerator().generate(it.queryText().toString()))
+                            .getData(parameterGenerator.generate(it.queryText().toString()))
                 }
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribeWith(object : DisposableObserver<ResponseResult<Find>>() {

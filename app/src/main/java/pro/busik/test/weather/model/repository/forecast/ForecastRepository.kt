@@ -8,11 +8,12 @@ import pro.busik.test.weather.model.repository.Repository
 import javax.inject.Inject
 
 class ForecastRepository @Inject constructor(
+        parameterGenerator: ParameterGenerator,
         netManager: NetManager,
         localDataSource: ForecastLocalDataSource,
         remoteDataSource: ForecastRemoteDataSource
 ) : Repository<Forecast>(netManager, localDataSource, remoteDataSource) {
     override val emptyParameterSet: ParameterSet<Forecast>
-        get() = ParameterGenerator().generate("", null)
+            = parameterGenerator.generate("", null)
 }
 

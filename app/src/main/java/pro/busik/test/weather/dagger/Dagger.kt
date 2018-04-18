@@ -7,6 +7,7 @@ import dagger.Provides
 import dagger.android.AndroidInjector
 import dagger.android.ContributesAndroidInjector
 import dagger.android.support.AndroidSupportInjectionModule
+import pro.busik.test.weather.model.ParameterGenerator
 import pro.busik.test.weather.model.repository.find.FindRepository
 import pro.busik.test.weather.model.repository.forecast.ForecastRepository
 import pro.busik.test.weather.viewmodel.SearchViewModelFactory
@@ -44,10 +45,11 @@ internal abstract class SearchFragmentModule{
         @JvmStatic
         @Provides
         internal fun providesSearchViewModelFactory(application: SearchApplication,
+                                                    parameterGenerator: ParameterGenerator,
                                                     forecastRepository: ForecastRepository,
                                                     findRepository: FindRepository)
                 : SearchViewModelFactory {
-            return SearchViewModelFactory(application, forecastRepository, findRepository)
+            return SearchViewModelFactory(application, parameterGenerator, forecastRepository, findRepository)
         }
     }
 
