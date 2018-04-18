@@ -27,6 +27,7 @@ import pro.busik.test.weather.viewmodel.SearchViewModelFactory
 import javax.inject.Inject
 import android.database.MatrixCursor
 import android.provider.BaseColumns
+import android.widget.Toast
 import com.google.gson.Gson
 import pro.busik.test.weather.model.data.SearchQuery
 
@@ -110,6 +111,12 @@ class SearchFragment : DaggerFragment() {
         //updates suggestions
         searchViewModel.citySuggestions.observe(this, Observer<List<City>> {
             it?.let {
+                if(it.isNotEmpty()){
+                    Toast.makeText(context,
+                            getString(R.string.suggestions_count_toast, it.size),
+                            Toast.LENGTH_SHORT).show()
+                }
+
                 val columns = arrayOf(
                         BaseColumns._ID,
                         SearchManager.SUGGEST_COLUMN_TEXT_1,

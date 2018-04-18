@@ -11,5 +11,7 @@
     <string name="exception_no_internet">There is no internet connection</string>
     <string name="exception_unknown">Unknown error occurred</string>
 
+    <string name="suggestions_count_toast">%1$d cities found</string>
+
     <string name="default_city_name">Moscow</string>
 </resources>
