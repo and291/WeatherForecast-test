@@ -34,9 +34,8 @@ class SearchViewModel(application: Application,
     var forecastItems = MutableLiveData<List<ForecastItem>>()
     var citySuggestions = MutableLiveData<List<City>>()
 
-    var selectedCity: City? = null
-
     private val compositeDisposable = CompositeDisposable()
+    private var selectedCity: City? = null //can be not null only until query changed
     private var currentQuery: String? = null //used for input filtering
 
     init {
@@ -61,6 +60,13 @@ class SearchViewModel(application: Application,
                     currentQuery = it.queryText().toString()
                     return@filter result
                 }
+                .flatMap { it -> io.reactivex.Observable.just(it.queryText().toString()) }
+                .doOnNext {
+                    //remove city if query changed
+                    if(selectedCity != null && it != selectedCity?.name){
+                        selectedCity = null
+                    }
+                }
                 .share()
 
         compositeDisposable += sharedObservable
@@ -73,10 +79,7 @@ class SearchViewModel(application: Application,
 //                    }
 //                }
                 .doOnNext { isLoading.set(true) }
-                .switchMap {
-                    return@switchMap forecastRepository
-                            .getData(parameterGenerator.generate(it.queryText().toString(), selectedCity))
-                }
+                .switchMap { it -> forecastRepository.getData(parameterGenerator.generate(it, selectedCity)) }
                 .observeOn(AndroidSchedulers.mainThread())
                 .doOnNext{ isLoading.set(false) }
                 .subscribeWith(object : DisposableObserver<ResponseResult<Forecast>>() {
@@ -102,10 +105,9 @@ class SearchViewModel(application: Application,
 
 
         compositeDisposable += sharedObservable
-                .switchMap {
-                    return@switchMap findRepository
-                            .getData(parameterGenerator.generate(it.queryText().toString()))
-                }
+                //do not perform any requests until selectedCity exists
+                .filter { selectedCity == null }
+                .switchMap { it -> findRepository.getData(parameterGenerator.generate(it)) }
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribeWith(object : DisposableObserver<ResponseResult<Find>>() {
                     override fun onComplete() {
