@@ -87,9 +87,9 @@ class SearchViewModel(application: Application,
 
         //forecast request
         compositeDisposable += sharedObservable
+                .observeOn(AndroidSchedulers.mainThread())
                 .doOnNext { isLoading.set(true) }
                 .switchMap { it -> forecastRepository.getData(parameterGenerator.generate(it, searchQuery.city)) }
-                .observeOn(AndroidSchedulers.mainThread())
                 .doOnNext{ isLoading.set(false) }
                 .subscribeWith(object : DisposableObserver<ResponseResult<Forecast>>() {
                     override fun onComplete() {
@@ -112,9 +112,9 @@ class SearchViewModel(application: Application,
         //find request
         compositeDisposable += sharedObservable
                 //do not perform find requests until selectedCity exists
+                .observeOn(AndroidSchedulers.mainThread())
                 .filter { searchQuery.city == null }
                 .switchMap { it -> findRepository.getData(parameterGenerator.generate(it)) }
-                .observeOn(AndroidSchedulers.mainThread())
                 .subscribeWith(object : DisposableObserver<ResponseResult<Find>>() {
                     override fun onComplete() {
                         SafeLog.v("Find: onComplete()")
