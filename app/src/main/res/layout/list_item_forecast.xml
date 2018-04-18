@@ -7,7 +7,7 @@
     <data>
         <variable
             name="forecastItem"
-            type="pro.busik.test.weather.model.ForecastItem"/>
+            type="pro.busik.test.weather.model.data.ForecastItem"/>
     </data>
 
     <android.support.constraint.ConstraintLayout

@@ -1,13 +1,16 @@
 package pro.busik.test.weather.refrofit
 
 import io.reactivex.Observable
-import pro.busik.test.weather.model.Forecast
+import pro.busik.test.weather.model.data.Find
+import pro.busik.test.weather.model.data.Forecast
 import retrofit2.http.GET
-import retrofit2.http.Query
+import retrofit2.http.QueryMap
 
 interface Api {
+    @GET("data/2.5/find?type=like")
+    fun find(@QueryMap parameters: Map<String, String>) : Observable<Find>
 
-    @GET("/data/2.5/forecast?units=metric&lang=ru&mode=json&appid=0a49791459a25a1ec88fb1893630d971")
-    fun forecast(@Query("q") query: String) : Observable<Forecast>
+    @GET("data/2.5/forecast")
+    fun forecast(@QueryMap parameters: Map<String, String>) : Observable<Forecast>
 }
 
