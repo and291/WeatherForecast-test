@@ -10,12 +10,14 @@ import com.jakewharton.rxbinding2.support.v7.widget.RxSearchView
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.observers.DisposableObserver
-import pro.busik.test.weather.model.City
-import pro.busik.test.weather.model.FindResponse
-import pro.busik.test.weather.model.ForecastItem
-import pro.busik.test.weather.model.ForecastResponse
-import pro.busik.test.weather.model.repository.FindRepository
-import pro.busik.test.weather.model.repository.ForecastRepository
+import pro.busik.test.weather.model.*
+import pro.busik.test.weather.model.repository.find.FindRepository
+import pro.busik.test.weather.model.repository.forecast.ForecastRepository
+import pro.busik.test.weather.model.data.City
+import pro.busik.test.weather.model.data.apiresponse.Find
+import pro.busik.test.weather.model.data.apiresponse.Forecast
+import pro.busik.test.weather.model.data.ForecastItem
+import pro.busik.test.weather.model.ParameterGenerator
 import pro.busik.test.weather.utils.SafeLog
 import pro.busik.test.weather.utils.plusAssign
 import java.util.concurrent.TimeUnit
@@ -30,6 +32,8 @@ class SearchViewModel(application: Application,
     var labelMessage = ObservableField<String>()
     var forecastItems = MutableLiveData<List<ForecastItem>>()
     var citySuggestions = MutableLiveData<List<City>>()
+
+    var selectedCity: City? = null
 
     private val compositeDisposable = CompositeDisposable()
     private var currentQuery: String? = null //used for input filtering
@@ -70,23 +74,23 @@ class SearchViewModel(application: Application,
                 .doOnNext { isLoading.set(true) }
                 .switchMap {
                     return@switchMap forecastRepository
-                            .getForecast(it.queryText().toString())
+                            .getData(ParameterGenerator().generate(it.queryText().toString(), selectedCity))
                 }
                 .observeOn(AndroidSchedulers.mainThread())
                 .doOnNext{ isLoading.set(false) }
-                .subscribeWith(object : DisposableObserver<ForecastResponse>() {
+                .subscribeWith(object : DisposableObserver<ResponseResult<Forecast>>() {
                     override fun onComplete() {
                         SafeLog.v("onComplete()")
                     }
 
-                    override fun onNext(value: ForecastResponse?) {
+                    override fun onNext(value: ResponseResult<Forecast>?) {
                         value?.let {
                             //log exceptions
                             it.exception?.let { SafeLog.v("onNext()", it) }
 
                             //apply data
                             labelMessage.set(it.exception?.getLabelMessage(getApplication()))
-                            forecastItems.value = it.forecast?.list ?: arrayListOf()
+                            forecastItems.value = it.data?.list ?: arrayListOf()
                         }
                     }
 
@@ -98,21 +102,22 @@ class SearchViewModel(application: Application,
 
         compositeDisposable += sharedObservable
                 .switchMap {
-                    return@switchMap findRepository.getFind(it.queryText().toString())
+                    return@switchMap findRepository
+                            .getData(ParameterGenerator().generate(it.queryText().toString()))
                 }
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribeWith(object : DisposableObserver<FindResponse>() {
+                .subscribeWith(object : DisposableObserver<ResponseResult<Find>>() {
                     override fun onComplete() {
                         SafeLog.v("onComplete()")
                     }
 
-                    override fun onNext(value: FindResponse?) {
+                    override fun onNext(value: ResponseResult<Find>?) {
                         value?.let {
                             //log exceptions
                             it.exception?.let { SafeLog.v("onNext()", it) }
 
                             //apply data
-                            citySuggestions.value = it.find?.list ?: arrayListOf<City>()
+                            citySuggestions.value = it.data?.list ?: arrayListOf<City>()
                         }
                     }
 

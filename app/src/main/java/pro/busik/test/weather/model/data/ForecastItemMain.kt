@@ -1,4 +1,4 @@
-package pro.busik.test.weather.model
+package pro.busik.test.weather.model.data
 
 import kotlin.math.roundToInt
 

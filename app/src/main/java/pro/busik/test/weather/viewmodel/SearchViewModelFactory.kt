@@ -3,8 +3,8 @@ package pro.busik.test.weather.viewmodel
 import android.app.Application
 import android.arch.lifecycle.ViewModel
 import android.arch.lifecycle.ViewModelProvider
-import pro.busik.test.weather.model.repository.FindRepository
-import pro.busik.test.weather.model.repository.ForecastRepository
+import pro.busik.test.weather.model.repository.find.FindRepository
+import pro.busik.test.weather.model.repository.forecast.ForecastRepository
 
 class SearchViewModelFactory(private val application: Application,
                              private val forecastRepository: ForecastRepository,

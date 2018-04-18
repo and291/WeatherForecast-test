@@ -10,7 +10,7 @@ import pro.busik.test.weather.R
 import android.app.SearchManager
 import android.content.Intent
 import com.google.gson.Gson
-import pro.busik.test.weather.model.City
+import pro.busik.test.weather.model.data.City
 
 class MainActivity : DaggerAppCompatActivity() {
 

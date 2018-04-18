@@ -15,7 +15,7 @@ import kotlinx.android.synthetic.main.fragment_search.*
 import pro.busik.test.weather.R
 import pro.busik.test.weather.databinding.FragmentSearchBinding
 import pro.busik.test.weather.databinding.ListItemForecastBinding
-import pro.busik.test.weather.model.ForecastItem
+import pro.busik.test.weather.model.data.ForecastItem
 import pro.busik.test.weather.utils.SafeLog
 import pro.busik.test.weather.viewmodel.SearchViewModel
 import android.app.SearchManager
@@ -23,7 +23,7 @@ import android.content.Context
 import android.support.v4.widget.SimpleCursorAdapter
 import android.widget.Toast
 import dagger.android.support.DaggerFragment
-import pro.busik.test.weather.model.City
+import pro.busik.test.weather.model.data.City
 import pro.busik.test.weather.viewmodel.SearchViewModelFactory
 import javax.inject.Inject
 import android.database.MatrixCursor

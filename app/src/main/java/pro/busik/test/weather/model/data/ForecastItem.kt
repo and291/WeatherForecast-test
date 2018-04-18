@@ -1,5 +1,6 @@
-package pro.busik.test.weather.model
+package pro.busik.test.weather.model.data
 
+import pro.busik.test.weather.model.data.ForecastItemMain
 import java.text.SimpleDateFormat
 import java.util.*
 

@@ -1,4 +1,4 @@
-package pro.busik.test.weather.model
+package pro.busik.test.weather.model.data
 
 import android.os.Parcel
 import android.os.Parcelable
