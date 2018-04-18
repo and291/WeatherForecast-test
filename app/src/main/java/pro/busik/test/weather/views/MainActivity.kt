@@ -11,56 +11,54 @@ import android.app.SearchManager
 import android.content.Intent
 import com.google.gson.Gson
 import pro.busik.test.weather.model.data.City
+import pro.busik.test.weather.model.data.SearchQuery
 
 class MainActivity : DaggerAppCompatActivity() {
 
     private val fragmentContainerId = R.id.fragmentContainer
-    private val fm = supportFragmentManager
-
-    private var initialQuery: String
-    private var selectedCity: City? = null
-
-    init {
-        initialQuery = getString(R.string.default_city_name)
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         setSupportActionBar(toolbar)
 
-        getIntentData(intent)
-
-        if(fm.findFragmentById(fragmentContainerId) == null){
-            replaceFragment()
+        //create fragment if there is no one
+        if(supportFragmentManager.findFragmentById(fragmentContainerId) == null){
+            replaceFragment(getSearchQuery())
         }
-
-        //onSearchRequested()
     }
 
-    override fun onNewIntent(intent: Intent?) {
-        super.onNewIntent(intent)
-        this.intent = intent
-        getIntentData(intent!!)
-        replaceFragment()
+    override fun onNewIntent(newIntent: Intent?) {
+        super.onNewIntent(newIntent)
+
+        //new search initiated: update intent and replace fragment
+        intent = newIntent
+        replaceFragment(getSearchQuery())
     }
 
-    private fun getIntentData(intent: Intent){
-        // Get the intent, verify the action and get the query
-        when (intent.action){
-            Intent.ACTION_SEARCH -> initialQuery = intent.getStringExtra(SearchManager.QUERY)
+    private fun getSearchQuery() : SearchQuery {
+        // SearchQuery depends on intent action
+        return when (intent.action){
+            //search by text query
+            Intent.ACTION_SEARCH -> SearchQuery(intent.getStringExtra(SearchManager.QUERY), null)
+
+            //search by selected suggestion
+            //can't pass parcelable because of MatrixCursor:
+            //https://stackoverflow.com/questions/3034575/passing-binary-blob-through-a-content-provider/3034717#3034717
             getString(R.string.intent_search_by_city) -> {
-                //can't pass parcelable because of MatrixCursor:
-                //https://stackoverflow.com/questions/3034575/passing-binary-blob-through-a-content-provider/3034717#3034717
                 val json = intent.getStringExtra(SearchManager.EXTRA_DATA_KEY)
-                selectedCity = Gson().fromJson<City>(json, City::class.java)
+                val selectedCity = Gson().fromJson<City>(json, City::class.java)
+                SearchQuery(selectedCity.name, selectedCity)
             }
+
+            //search by default city name
+            else -> SearchQuery(getString(R.string.default_city_name), null)
         }
     }
 
-    private fun replaceFragment(){
-        fm.beginTransaction()
-                .replace(fragmentContainerId, SearchFragment.newInstance(initialQuery, selectedCity))
+    private fun replaceFragment(searchQuery: SearchQuery){
+        supportFragmentManager.beginTransaction()
+                .replace(fragmentContainerId, SearchFragment.newInstance(searchQuery))
                 .commit()
     }
 

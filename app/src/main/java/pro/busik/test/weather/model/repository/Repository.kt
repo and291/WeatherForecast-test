@@ -21,17 +21,17 @@ abstract class Repository<T> constructor(
         }
 
         return localDataSource.tryGetFromCache(query) ?:
-        if(!netManager.isConnectedToInternet){
-            //set exception for network request if there is no internet connection
-            Observable.just(ResponseResult(NoInternetConnectionException()))
-        } else {
-            remoteDataSource.requestFromServer(query)
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .doOnNext{
-                        it.data?.let {
-                            localDataSource.save(query, it)
-                        }
-                    }
-        }
+                if(!netManager.isConnectedToInternet){
+                    //set exception for network request if there is no internet connection
+                    Observable.just(ResponseResult(NoInternetConnectionException()))
+                } else {
+                    remoteDataSource.requestFromServer(query)
+                            .observeOn(AndroidSchedulers.mainThread())
+                            .doOnNext{
+                                it.data?.let {
+                                    localDataSource.save(query, it)
+                                }
+                            }
+                }
     }
 }

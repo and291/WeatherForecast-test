@@ -13,11 +13,8 @@ import io.reactivex.observers.DisposableObserver
 import pro.busik.test.weather.model.*
 import pro.busik.test.weather.model.repository.find.FindRepository
 import pro.busik.test.weather.model.repository.forecast.ForecastRepository
-import pro.busik.test.weather.model.data.City
-import pro.busik.test.weather.model.data.Find
-import pro.busik.test.weather.model.data.Forecast
-import pro.busik.test.weather.model.data.ForecastItem
 import pro.busik.test.weather.model.ParameterGenerator
+import pro.busik.test.weather.model.data.*
 import pro.busik.test.weather.utils.SafeLog
 import pro.busik.test.weather.utils.plusAssign
 import java.util.concurrent.TimeUnit
@@ -35,8 +32,8 @@ class SearchViewModel(application: Application,
     var citySuggestions = MutableLiveData<List<City>>()
 
     private val compositeDisposable = CompositeDisposable()
-    private var selectedCity: City? = null //can be not null only until query changed
-    private var currentQuery: String? = null //used for input filtering
+    private lateinit var searchQuery: SearchQuery
+    private var skipFirstFilter: Boolean = true
 
     init {
         isLoading.addOnPropertyChangedCallback(object : Observable.OnPropertyChangedCallback(){
@@ -50,76 +47,82 @@ class SearchViewModel(application: Application,
         }
     }
 
-    fun setSearchView(searchView: SearchView){
+    fun startSearch(searchView: SearchView, initialSearchQuery: SearchQuery){
+        //set initial searchQuery
+        searchQuery = initialSearchQuery
+        skipFirstFilter = true
+
+        //create shared observable
         val sharedObservable = RxSearchView.queryTextChangeEvents(searchView)
-                .debounce(300, TimeUnit.MILLISECONDS)
                 .observeOn(AndroidSchedulers.mainThread())
+//              .distinctUntilChanged { old, new ->
+//                  //distinctUntilChanged if not submitted
+//                  return@distinctUntilChanged if(new.isSubmitted){
+//                       false
+//                  } else {
+//                      old.queryText().toString() == new.queryText().toString() //doesn't work on second emit (bug?)
+//                  }
+//              }
                 .filter {
+                    //skips filter on first emit so the user does not need to submit
+                    if(skipFirstFilter){
+                        skipFirstFilter = false
+                        return@filter true
+                    }
+
                     //distinct until query changed if not submitted
-                    val result = if(it.isSubmitted) true else currentQuery != it.queryText().toString()
-                    currentQuery = it.queryText().toString()
+                    val result = if(it.isSubmitted) true else searchQuery.textQuery != it.queryText().toString()
+                    searchQuery.textQuery = it.queryText().toString()
                     return@filter result
                 }
+                .debounce(300, TimeUnit.MILLISECONDS)
                 .flatMap { it -> io.reactivex.Observable.just(it.queryText().toString()) }
                 .doOnNext {
                     //remove city if query changed
-                    if(selectedCity != null && it != selectedCity?.name){
-                        selectedCity = null
+                    if(searchQuery.city != null && it != searchQuery.city?.name){
+                        searchQuery.city = null
                     }
                 }
                 .share()
 
+        //forecast request
         compositeDisposable += sharedObservable
-//                .distinctUntilChanged { old, new ->
-//                    //distinctUntilChanged if not submitted
-//                    return@distinctUntilChanged if(new.isSubmitted){
-//                         false
-//                    } else {
-//                        old.queryText().toString() == new.queryText().toString() //doesn't work on second emit (bug?)
-//                    }
-//                }
                 .doOnNext { isLoading.set(true) }
-                .switchMap { it -> forecastRepository.getData(parameterGenerator.generate(it, selectedCity)) }
+                .switchMap { it -> forecastRepository.getData(parameterGenerator.generate(it, searchQuery.city)) }
                 .observeOn(AndroidSchedulers.mainThread())
                 .doOnNext{ isLoading.set(false) }
                 .subscribeWith(object : DisposableObserver<ResponseResult<Forecast>>() {
                     override fun onComplete() {
-                        SafeLog.v("onComplete()")
+                        SafeLog.v("Forecast: onComplete()")
                     }
 
                     override fun onNext(value: ResponseResult<Forecast>?) {
+                        //apply data
                         value?.let {
-                            //log exceptions
-                            it.exception?.let { SafeLog.v("onNext()", it) }
-
-                            //apply data
                             labelMessage.set(it.exception?.getLabelMessage(getApplication()))
                             forecastItems.value = it.data?.list ?: arrayListOf()
                         }
                     }
 
                     override fun onError(e: Throwable?) {
-                        SafeLog.v("onError() $e")
+                        e?.let { SafeLog.v("Forecast: onError()", it) }
                     }
                 })
 
-
+        //find request
         compositeDisposable += sharedObservable
-                //do not perform any requests until selectedCity exists
-                .filter { selectedCity == null }
+                //do not perform find requests until selectedCity exists
+                .filter { searchQuery.city == null }
                 .switchMap { it -> findRepository.getData(parameterGenerator.generate(it)) }
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribeWith(object : DisposableObserver<ResponseResult<Find>>() {
                     override fun onComplete() {
-                        SafeLog.v("onComplete()")
+                        SafeLog.v("Find: onComplete()")
                     }
 
                     override fun onNext(value: ResponseResult<Find>?) {
+                        //apply data
                         value?.let {
-                            //log exceptions
-                            it.exception?.let { SafeLog.v("onNext()", it) }
-
-                            //apply data
                             //don't show suggestions if there is only one
                             citySuggestions.value = it.data?.list?.let {
                                 if(it.size == 1) arrayListOf() else it
@@ -128,7 +131,7 @@ class SearchViewModel(application: Application,
                     }
 
                     override fun onError(e: Throwable?) {
-                        SafeLog.v("onError() $e")
+                        e?.let { SafeLog.v("Find: onError()", it) }
                     }
                 })
     }
@@ -137,4 +140,6 @@ class SearchViewModel(application: Application,
         super.onCleared()
         compositeDisposable.dispose()
     }
+
+    fun getCurrentSearchQuery() : SearchQuery = searchQuery
 }

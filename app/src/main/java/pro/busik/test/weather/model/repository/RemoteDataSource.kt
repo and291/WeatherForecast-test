@@ -10,13 +10,12 @@ abstract class RemoteDataSource<T> constructor(
         private val serviceGenerator: ServiceGenerator
 ){
 
-    fun requestFromServer(query: ParameterSet<T>) : Observable<ResponseResult<T>> {
+    fun requestFromServer(query: ParameterSet<T>) : Observable<ResponseResult<T>> =
+            getObservable(serviceGenerator, query)
+                    .subscribeOn(Schedulers.io())
+                    .flatMap { it -> Observable.just(ResponseResult<T>(it)) }
+                    .onErrorReturn { it -> ResponseResult(it) }
 
-        return getObservable(serviceGenerator, query)
-                .subscribeOn(Schedulers.io())
-                .flatMap { return@flatMap Observable.just(ResponseResult<T>(it)) }
-                .onErrorReturn { return@onErrorReturn ResponseResult<T>(it) }
-    }
-
-    protected abstract fun getObservable(serviceGenerator: ServiceGenerator, query: ParameterSet<T>) : Observable<T>
+    protected abstract fun getObservable(serviceGenerator: ServiceGenerator, query: ParameterSet<T>)
+            : Observable<T>
 }
